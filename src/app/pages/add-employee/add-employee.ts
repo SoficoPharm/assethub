@@ -3,16 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
-import { UsersService } from '../../services/users.service';
+import { EmployeesService } from '../../services/employees.service';
 
 @Component({
-  selector: 'app-add-user',
+  selector: 'app-add-employee',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './add-user.html',
-  styleUrls: ['./add-user.scss']
+  templateUrl: './add-employee.html',
+  styleUrls: ['./add-employee.scss']
 })
-export class AddUser implements OnInit {
+export class AddEmployee implements OnInit {
   fullName = '';
   email = '';
   employeeId = '';
@@ -42,7 +42,7 @@ saving = false;
 
   constructor(
     private readonly router: Router,
-    private readonly usersService: UsersService,
+    private readonly employeesService: EmployeesService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -55,7 +55,7 @@ saving = false;
     this.roles = ['Admin', 'IT Support', 'Manager', 'Viewer'];
   }
 
-saveUser(): void {
+saveEmployee(): void {
   if (!this.fullName.trim() || !this.email.trim() || !this.role.trim()) {
     this.showAppToast('Please enter full name, email, and system role.', 'error');
     return;
@@ -63,7 +63,7 @@ saveUser(): void {
 
   this.saving = true;
 
-  this.usersService.createUser({
+  this.employeesService.createEmployee({
     fullName: this.fullName.trim(),
     email: this.email.trim(),
     employeeId: this.employeeId.trim(),
@@ -77,23 +77,23 @@ saveUser(): void {
   }).subscribe({
     next: () => {
       setTimeout(() => {
-        this.router.navigate(['/users']);
+        this.router.navigate(['/employees']);
       }, 600); // يخلي loader يبان شوية
     },
     error: err => {
       console.error(err);
       this.saving = false;
-      this.showAppToast('Failed to save user.', 'error');
+      this.showAppToast('Failed to save employee.', 'error');
     }
   });
 }
 
   cancel(): void {
-    this.router.navigate(['/users']);
+    this.router.navigate(['/employees']);
   }
 
   backToList(): void {
-    this.router.navigate(['/users']);
+    this.router.navigate(['/employees']);
   }
 
   onImageSelected(event: Event): void {

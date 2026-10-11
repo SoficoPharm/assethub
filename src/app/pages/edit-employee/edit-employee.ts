@@ -3,16 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs';
-import { UsersService } from '../../services/users.service';
+import { EmployeesService } from '../../services/employees.service';
 
 @Component({
-  selector: 'app-edit-user',
+  selector: 'app-edit-employee',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './edit-user.html',
-  styleUrls: ['./edit-user.scss']
+  templateUrl: './edit-employee.html',
+  styleUrls: ['./edit-employee.scss']
 })
-export class EditUser implements OnInit {
+export class EditEmployee implements OnInit {
   userId = 0;
   originalEmployeeId = '';
 
@@ -50,15 +50,15 @@ export class EditUser implements OnInit {
   constructor(
     private readonly router: Router,
     private readonly route: ActivatedRoute,
-    private readonly usersService: UsersService,
+    private readonly employeesService: EmployeesService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.originalEmployeeId = this.route.snapshot.paramMap.get('id') || '';
+    this.originalEmployeeId = this.route.snapshot.paramMap.get('employeeId') || '';
 
     if (!this.originalEmployeeId) {
-      this.router.navigate(['/users']);
+      this.router.navigate(['/employees']);
       return;
     }
 
@@ -68,7 +68,7 @@ export class EditUser implements OnInit {
   loadUser(): void {
     this.loading = true;
 
-    this.usersService.getUserByEmployeeId(this.originalEmployeeId)
+    this.employeesService.getEmployeeByEmployeeId(this.originalEmployeeId)
       .pipe(finalize(() => {
         this.loading = false;
         this.cdr.detectChanges();
@@ -90,7 +90,7 @@ export class EditUser implements OnInit {
         },
         error: (err) => {
           console.error(err);
-          this.showAppToast(this.getErrorMessage(err, 'Failed to load user.'), 'error');
+          this.showAppToast(this.getErrorMessage(err, 'Failed to load employee.'), 'error');
         }
       });
   }
@@ -103,7 +103,7 @@ export class EditUser implements OnInit {
 
     this.saving = true;
 
-    this.usersService.updateUser(this.userId, {
+    this.employeesService.updateEmployee(this.userId, {
       fullName: this.fullName.trim(),
       email: this.email.trim(),
       employeeId: this.employeeId.trim(),
@@ -121,35 +121,35 @@ export class EditUser implements OnInit {
       }))
       .subscribe({
         next: () => {
-          this.showAppToast('User updated successfully', 'success');
-          setTimeout(() => this.router.navigate(['/users']), 600);
+          this.showAppToast('Employee updated successfully', 'success');
+          setTimeout(() => this.router.navigate(['/employees']), 600);
         },
         error: (err) => {
           console.error(err);
-          this.showAppToast(this.getErrorMessage(err, 'Failed to update user.'), 'error');
+          this.showAppToast(this.getErrorMessage(err, 'Failed to update employee.'), 'error');
         }
       });
   }
 
-  deleteUser(): void {
+  deleteEmployee(): void {
     const confirmed = confirm(`Are you sure you want to delete ${this.fullName}?`);
     if (!confirmed) return;
 
     this.deleting = true;
 
-    this.usersService.deleteUser(this.userId)
+    this.employeesService.deleteEmployee(this.userId)
       .pipe(finalize(() => {
         this.deleting = false;
         this.cdr.detectChanges();
       }))
       .subscribe({
         next: () => {
-          this.showAppToast('User deleted successfully', 'success');
-          setTimeout(() => this.router.navigate(['/users']), 600);
+          this.showAppToast('Employee deleted successfully', 'success');
+          setTimeout(() => this.router.navigate(['/employees']), 600);
         },
         error: (err) => {
           console.error(err);
-          this.showAppToast(this.getErrorMessage(err, 'Failed to delete user.'), 'error');
+          this.showAppToast(this.getErrorMessage(err, 'Failed to delete employee.'), 'error');
         }
       });
   }
@@ -191,11 +191,11 @@ export class EditUser implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/users']);
+    this.router.navigate(['/employees']);
   }
 
   backToList(): void {
-    this.router.navigate(['/users']);
+    this.router.navigate(['/employees']);
   }
 
   toggleAddBox(type: 'department' | 'role'): void {

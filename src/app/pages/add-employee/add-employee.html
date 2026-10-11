@@ -1,7 +1,7 @@
 <section class="form-page">
   <div class="page-header">
-    <div class="breadcrumb">Users <span>›</span> Add</div>
-    <h1>Add New User</h1>
+    <div class="breadcrumb">Employees <span>›</span> Add</div>
+    <h1>Add New Employee</h1>
   </div>
 
   <div class="card-wrap">
@@ -12,7 +12,7 @@
         </svg>
       </button>
 
-      <h2>User Details</h2>
+      <h2>Employee Details</h2>
     </div>
 
     <div class="card">
@@ -148,7 +148,7 @@
       </div>
 
       <div class="images-section">
-        <div class="section-label">User Image</div>
+        <div class="section-label">Employee Image</div>
 
         <label class="upload-box" [class.disabled]="loading">
           <input
@@ -167,7 +167,7 @@
           </div>
 
           <div>
-            <div class="upload-title">Upload user image</div>
+            <div class="upload-title">Upload employee image</div>
             <div class="upload-subtitle">
               Upload employee profile image, ID image, or custody paper image
             </div>
@@ -177,11 +177,11 @@
         @if (imagePreview) {
           <div class="images-list">
             <div class="image-item">
-              <img [src]="imagePreview" alt="User preview" class="real-preview" />
+              <img [src]="imagePreview" alt="Employee preview" class="real-preview" />
 
               <div class="image-info">
                 <div class="image-name">{{ imageName }}</div>
-                <div class="image-meta">User Image • {{ imageSize }}</div>
+                <div class="image-meta">Employee Image • {{ imageSize }}</div>
               </div>
 
               <button
@@ -202,8 +202,8 @@
           Cancel
         </button>
 
-        <button class="primary-btn" type="button" [disabled]="loading" (click)="saveUser()">
-          Save User
+        <button class="primary-btn" type="button" [disabled]="loading" (click)="saveEmployee()">
+          Save Employee
         </button>
       </div>
 
@@ -218,7 +218,7 @@
   @if (loading) {
     <div class="page-loader">
       <div class="spinner"></div>
-      <span>Saving user...</span>
+      <span>Saving employee...</span>
     </div>
   }
 </section>

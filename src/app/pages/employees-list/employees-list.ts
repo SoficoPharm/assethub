@@ -3,24 +3,24 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
-import { UserRow, UsersService } from '../../services/users.service';
+import { EmployeeRow, EmployeesService } from '../../services/employees.service';
 
 @Component({
-  selector: 'app-users-list',
+  selector: 'app-employees-list',
   standalone: true,
   imports: [CommonModule, RouterLink, FormsModule],
-  templateUrl: './users-list.html',
-  styleUrls: ['./users-list.scss']
+  templateUrl: './employees-list.html',
+  styleUrls: ['./employees-list.scss']
 })
-export class UsersList implements OnInit {
+export class EmployeesList implements OnInit {
   searchText = '';
-  users: UserRow[] = [];
+  users: EmployeeRow[] = [];
 
   loading = false;
   errorMessage = '';
 
   constructor(
-    private readonly usersService: UsersService,
+    private readonly employeesService: EmployeesService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -32,7 +32,7 @@ export class UsersList implements OnInit {
     this.loading = true;
     this.errorMessage = '';
 
-    this.usersService.getUsers()
+    this.employeesService.getEmployees()
       .pipe(
         finalize(() => {
           this.loading = false;
@@ -45,8 +45,8 @@ export class UsersList implements OnInit {
           this.cdr.detectChanges();
         },
         error: (err) => {
-          console.error('Users error:', err);
-          this.errorMessage = `Failed to load users. Status: ${err.status || 'error'}`;
+          console.error('Employees error:', err);
+          this.errorMessage = `Failed to load employees. Status: ${err.status || 'error'}`;
         }
       });
   }
@@ -56,7 +56,7 @@ export class UsersList implements OnInit {
     window.open(url, '_blank');
   }
 
-  get filteredUsers(): UserRow[] {
+  get filteredUsers(): EmployeeRow[] {
     const search = this.searchText.trim().toLowerCase();
 
     return this.users.filter(user => {

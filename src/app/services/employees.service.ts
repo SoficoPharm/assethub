@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
 
-export interface UserRow {
+export interface EmployeeRow {
   id: number;
   name: string;
   email: string;
@@ -19,7 +19,7 @@ export interface UserRow {
   userDomain?: string;
 }
 
-export interface CreateUserRequest {
+export interface EmployeeRequest {
   fullName: string;
   email: string;
   employeeId: string;
@@ -33,7 +33,7 @@ export interface CreateUserRequest {
 }
 
 @Injectable({ providedIn: 'root' })
-export class UsersService {
+export class EmployeesService {
   private readonly api = environment.apiUrl;
 
   constructor(private readonly http: HttpClient) {}
@@ -46,7 +46,7 @@ export class UsersService {
       : new HttpHeaders();
   }
 
-  private toFormData(data: CreateUserRequest): FormData {
+  private toFormData(data: EmployeeRequest): FormData {
     const formData = new FormData();
 
     formData.append('FullName', data.fullName ?? '');
@@ -66,37 +66,37 @@ export class UsersService {
     return formData;
   }
 
-  getUsers(): Observable<UserRow[]> {
-    return this.http.get<UserRow[]>(`${this.api}/Users`, {
+  getEmployees(): Observable<EmployeeRow[]> {
+    return this.http.get<EmployeeRow[]>(`${this.api}/Users`, {
       headers: this.headers()
     });
   }
 
-  getUserById(id: number): Observable<UserRow> {
-    return this.http.get<UserRow>(`${this.api}/Users/${id}`, {
+  getEmployeeById(id: number): Observable<EmployeeRow> {
+    return this.http.get<EmployeeRow>(`${this.api}/Users/${id}`, {
       headers: this.headers()
     });
   }
 
-  getUserByEmployeeId(employeeId: string): Observable<UserRow> {
-    return this.http.get<UserRow>(`${this.api}/Users/by-employee/${employeeId}`, {
+  getEmployeeByEmployeeId(employeeId: string): Observable<EmployeeRow> {
+    return this.http.get<EmployeeRow>(`${this.api}/Users/by-employee/${employeeId}`, {
       headers: this.headers()
     });
   }
 
-  createUser(data: CreateUserRequest): Observable<unknown> {
+  createEmployee(data: EmployeeRequest): Observable<unknown> {
     return this.http.post(`${this.api}/Users`, this.toFormData(data), {
       headers: this.headers()
     });
   }
 
-  updateUser(id: number, data: CreateUserRequest): Observable<unknown> {
+  updateEmployee(id: number, data: EmployeeRequest): Observable<unknown> {
     return this.http.put(`${this.api}/Users/${id}`, this.toFormData(data), {
       headers: this.headers()
     });
   }
 
-  deleteUser(id: number): Observable<unknown> {
+  deleteEmployee(id: number): Observable<unknown> {
     return this.http.delete(`${this.api}/Users/${id}`, {
       headers: this.headers()
     });

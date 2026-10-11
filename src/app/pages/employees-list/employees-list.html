@@ -1,6 +1,6 @@
 <section class="users-page">
   <div class="page-header">
-    <h1>Users</h1>
+    <h1>Employees</h1>
   </div>
 
   <div class="toolbar">
@@ -12,20 +12,20 @@
 
       <input
         type="text"
-        placeholder="Search users, email, employee ID..."
+        placeholder="Search employees, email, employee ID..."
         [(ngModel)]="searchText"
       />
     </div>
 
     <div class="toolbar-actions">
-      <a routerLink="/users/add" class="primary-btn">+ Add User</a>
+      <a routerLink="/employees/add" class="primary-btn">+ Add Employee</a>
     </div>
   </div>
 
   @if (loading) {
     <div class="center-loader">
       <div class="spinner"></div>
-      <span>Loading users...</span>
+      <span>Loading employees...</span>
     </div>
   }
 
@@ -36,7 +36,7 @@
   @if (!loading) {
     <div class="table-card">
 <div class="table-head grid-row">
-  <div>User</div>
+  <div>Employee</div>
   <div>Employee ID</div>
   <div>User Domain</div> <!-- ✅ جديد -->
   <div>Department</div>
@@ -86,7 +86,7 @@
     </div>
 
     <div class="actions-cell">
-      <a [routerLink]="['/users/edit', user.employeeId]" class="edit-link">
+      <a [routerLink]="['/employees/edit', user.employeeId]" class="edit-link">
         Edit
       </a>
     </div>
@@ -94,7 +94,7 @@
 }
       @if (filteredUsers.length === 0) {
         <div class="empty-state">
-          No users found.
+          No employees found.
         </div>
       }
     </div>

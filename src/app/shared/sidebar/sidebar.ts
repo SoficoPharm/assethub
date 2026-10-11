@@ -23,7 +23,7 @@ export class Sidebar implements OnInit {
   menuItems: MenuItem[] = [
     { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
     { label: 'Devices', icon: 'devices', route: '/devices' },
-    { label: 'Users', icon: 'users', route: '/users' },
+    { label: 'Employees', icon: 'users', route: '/employees' },
     {
       label: 'Assignments',
       icon: 'assignments',

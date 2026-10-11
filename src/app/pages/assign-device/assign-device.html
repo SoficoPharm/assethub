@@ -8,7 +8,7 @@
     <div class="card assign-card">
       <div class="card-header">
         <div class="step-badge">1</div>
-        <h2>Select User</h2>
+        <h2>Select Employee</h2>
       </div>
 
       <div class="search-box">
@@ -19,7 +19,7 @@
 
         <input
           type="text"
-          placeholder="Search user name, email, or employee ID..."
+          placeholder="Search employee name, email, or employee ID..."
           [(ngModel)]="userSearch"
           [disabled]="assigning"
         />
@@ -28,7 +28,7 @@
       @if (loadingUsers) {
         <div class="mini-loader">
           <div class="mini-spinner"></div>
-          <span>Loading users...</span>
+          <span>Loading employees...</span>
         </div>
       } @else {
         <div class="list-stack">
@@ -48,7 +48,7 @@
           }
 
           @if (filteredUsers.length === 0) {
-            <div class="empty-state">No users found.</div>
+            <div class="empty-state">No employees found.</div>
           }
         </div>
       }

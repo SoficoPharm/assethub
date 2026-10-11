@@ -7,9 +7,9 @@ import { AddDevice } from './pages/add-device/add-device';
 import { EditDevice } from './pages/edit-device/edit-device';
 import { DevicesList } from './pages/devices-list/devices-list';
 import { DeviceDetails } from './pages/device-details/device-details';
-import { UsersList } from './pages/users-list/users-list';
-import { AddUser } from './pages/add-user/add-user';
-import { EditUser } from './pages/edit-user/edit-user';
+import { EmployeesList } from './pages/employees-list/employees-list';
+import { AddEmployee } from './pages/add-employee/add-employee';
+import { EditEmployee } from './pages/edit-employee/edit-employee';
 import { UserDetails } from './pages/user-details/user-details';
 import { NotFound } from './pages/not-found/not-found';
 import { Departments } from './pages/departments/departments';
@@ -40,10 +40,10 @@ export const routes: Routes = [
       { path: 'devices/edit/:code', component: EditDevice },
       { path: 'devices/details/:code', component: DeviceDetails },
 
-      { path: 'users', component: UsersList },
-      { path: 'users/add', component: AddUser },
-      { path: 'users/edit/:id', component: EditUser },
-      { path: 'users/details/:id', component: UserDetails },
+      { path: 'employees', component: EmployeesList },
+      { path: 'employees/add', component: AddEmployee },
+      { path: 'employees/edit/:employeeId', component: EditEmployee },
+      { path: 'employees/details/:id', component: UserDetails },
 
       { path: 'departments', component: Departments },
 

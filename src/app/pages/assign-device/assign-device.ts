@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
-import { UsersService, UserRow } from '../../services/users.service';
+import { EmployeesService, EmployeeRow } from '../../services/employees.service';
 import { DevicesService, DeviceRow } from '../../services/devices.service';
 import { AssignmentsService } from '../../services/assignments.service';
 
@@ -18,10 +18,10 @@ export class AssignDevice implements OnInit {
   userSearch = '';
   deviceSearch = '';
 
-  selectedUser: UserRow | null = null;
+  selectedUser: EmployeeRow | null = null;
   selectedDevice: DeviceRow | null = null;
 
-  users: UserRow[] = [];
+  users: EmployeeRow[] = [];
   devices: DeviceRow[] = [];
 
   loadingUsers = false;
@@ -34,7 +34,7 @@ export class AssignDevice implements OnInit {
 
   constructor(
     private readonly router: Router,
-    private readonly usersService: UsersService,
+    private readonly employeesService: EmployeesService,
     private readonly devicesService: DevicesService,
     private readonly assignmentsService: AssignmentsService,
     private readonly cdr: ChangeDetectorRef
@@ -48,7 +48,7 @@ export class AssignDevice implements OnInit {
   loadUsers(): void {
     this.loadingUsers = true;
 
-    this.usersService.getUsers()
+    this.employeesService.getEmployees()
       .pipe(finalize(() => {
         this.loadingUsers = false;
         this.cdr.detectChanges();
@@ -56,8 +56,8 @@ export class AssignDevice implements OnInit {
       .subscribe({
         next: res => this.users = res ?? [],
         error: err => {
-          console.error('Assign users error:', err);
-          this.showAppToast(this.getErrorMessage(err, 'Failed to load users.'), 'error');
+          console.error('Assign employees error:', err);
+          this.showAppToast(this.getErrorMessage(err, 'Failed to load employees.'), 'error');
         }
       });
   }
@@ -79,7 +79,7 @@ export class AssignDevice implements OnInit {
       });
   }
 
-  get filteredUsers(): UserRow[] {
+  get filteredUsers(): EmployeeRow[] {
     const search = this.userSearch.trim().toLowerCase();
 
     return this.users.filter(user => {
@@ -119,7 +119,7 @@ export class AssignDevice implements OnInit {
     });
   }
 
-  selectUser(user: UserRow): void {
+  selectUser(user: EmployeeRow): void {
     if (this.assigning) return;
     this.selectedUser = user;
   }
@@ -131,7 +131,7 @@ export class AssignDevice implements OnInit {
 
   assignDevice(): void {
     if (!this.selectedUser || !this.selectedDevice) {
-      this.showAppToast('Please select user and device.', 'error');
+      this.showAppToast('Please select an employee and a device.', 'error');
       return;
     }
 

@@ -1,13 +1,13 @@
 <section class="form-page">
   <div class="page-header">
-    <div class="breadcrumb">Users <span>›</span> Edit</div>
-    <h1>Edit User</h1>
+    <div class="breadcrumb">Employees <span>›</span> Edit</div>
+    <h1>Edit Employee</h1>
   </div>
 
   @if (loading) {
     <div class="center-loader">
       <div class="spinner"></div>
-      <span>Loading user...</span>
+      <span>Loading employee...</span>
     </div>
   }
 
@@ -27,7 +27,7 @@
             </svg>
           </button>
 
-          <h2>{{ fullName || 'User' }} ({{ employeeId }})</h2>
+          <h2>{{ fullName || 'Employee' }} ({{ employeeId }})</h2>
         </div>
 
         <div class="edited-badge">
@@ -190,7 +190,7 @@
         </div>
 
         <div class="images-section">
-          <div class="section-label">User Image</div>
+          <div class="section-label">Employee Image</div>
 
           <label class="upload-box" [class.disabled]="saving || deleting">
             <input
@@ -209,7 +209,7 @@
             </div>
 
             <div>
-              <div class="upload-title">Upload user image</div>
+              <div class="upload-title">Upload employee image</div>
               <div class="upload-subtitle">
                 Upload employee profile image, ID image, or custody paper image
               </div>
@@ -221,16 +221,16 @@
               <div class="image-item">
                 <img
                   [src]="imagePreview"
-                  alt="User preview"
+                  alt="Employee preview"
                   class="real-preview"
                 />
 
                 <div class="image-info">
                   <div class="image-name">
-                    {{ imageName || 'Current user image' }}
+                    {{ imageName || 'Current employee image' }}
                   </div>
                   <div class="image-meta">
-                    User Image
+                    Employee Image
                     @if (imageSize) {
                       <span> • {{ imageSize }}</span>
                     }
@@ -255,12 +255,12 @@
             class="danger-link"
             type="button"
             [disabled]="saving || deleting"
-            (click)="deleteUser()"
+            (click)="deleteEmployee()"
           >
             @if (deleting) {
               Deleting...
             } @else {
-              Delete User
+              Delete Employee
             }
           </button>
 
@@ -304,7 +304,7 @@
       <div class="spinner"></div>
       <span>
         @if (deleting) {
-          Deleting user...
+          Deleting employee...
         } @else {
           Saving changes...
         }
