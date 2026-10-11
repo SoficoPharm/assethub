@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
@@ -14,6 +14,11 @@ export interface ProfileDto {
   createdAt: string;
 }
 
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -22,17 +27,11 @@ export class ProfileService {
 
   constructor(private readonly http: HttpClient) {}
 
-  private headers(): HttpHeaders {
-    const token = localStorage.getItem('token');
-
-    return token
-      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
-      : new HttpHeaders();
+  getMyProfile(): Observable<ProfileDto> {
+    return this.http.get<ProfileDto>(`${this.api}/Profile/me`);
   }
 
-  getMyProfile(): Observable<ProfileDto> {
-    return this.http.get<ProfileDto>(`${this.api}/Profile/me`, {
-      headers: this.headers()
-    });
+  changePassword(data: ChangePasswordRequest): Observable<unknown> {
+    return this.http.post(`${this.api}/Profile/change-password`, data);
   }
 }

@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -13,6 +14,8 @@ import { EmployeeRow, EmployeesService } from '../../services/employees.service'
   styleUrls: ['./employees-list.scss']
 })
 export class EmployeesList implements OnInit {
+  protected readonly auth = inject(AuthService);
+
   searchText = '';
   users: EmployeeRow[] = [];
 
@@ -66,7 +69,6 @@ export class EmployeesList implements OnInit {
       const userDomain = user.userDomain ?? '';
       const department = user.department ?? '';
       const title = user.title ?? '';
-      const role = user.role ?? '';
 
       return (
         !search ||
@@ -75,8 +77,7 @@ export class EmployeesList implements OnInit {
         employeeId.toLowerCase().includes(search) ||
         userDomain.toLowerCase().includes(search) ||
         department.toLowerCase().includes(search) ||
-        title.toLowerCase().includes(search) ||
-        role.toLowerCase().includes(search)
+        title.toLowerCase().includes(search)
       );
     });
   }

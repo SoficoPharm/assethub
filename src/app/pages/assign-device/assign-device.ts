@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { NotificationService } from '../../core/notification.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -15,6 +16,8 @@ import { AssignmentsService } from '../../services/assignments.service';
   styleUrls: ['./assign-device.scss']
 })
 export class AssignDevice implements OnInit {
+  private readonly notify = inject(NotificationService);
+
   userSearch = '';
   deviceSearch = '';
 
@@ -28,9 +31,6 @@ export class AssignDevice implements OnInit {
   loadingDevices = false;
   assigning = false;
 
-  showToast = false;
-  toastMessage = '';
-  toastType: 'success' | 'error' = 'success';
 
   constructor(
     private readonly router: Router,
@@ -57,7 +57,7 @@ export class AssignDevice implements OnInit {
         next: res => this.users = res ?? [],
         error: err => {
           console.error('Assign employees error:', err);
-          this.showAppToast(this.getErrorMessage(err, 'Failed to load employees.'), 'error');
+          this.notify.apiError(err, 'Failed to load employees.');
         }
       });
   }
@@ -74,7 +74,7 @@ export class AssignDevice implements OnInit {
         next: res => this.devices = res ?? [],
         error: err => {
           console.error('Available devices error:', err);
-          this.showAppToast(this.getErrorMessage(err, 'Failed to load available devices.'), 'error');
+          this.notify.apiError(err, 'Failed to load available devices.');
         }
       });
   }
@@ -131,7 +131,7 @@ export class AssignDevice implements OnInit {
 
   assignDevice(): void {
     if (!this.selectedUser || !this.selectedDevice) {
-      this.showAppToast('Please select an employee and a device.', 'error');
+      this.notify.error('Please select an employee and a device.');
       return;
     }
 
@@ -147,7 +147,7 @@ export class AssignDevice implements OnInit {
       }))
       .subscribe({
         next: () => {
-          this.showAppToast('Device assigned successfully', 'success');
+          this.notify.success('Device assigned successfully');
 
           setTimeout(() => {
             this.router.navigate(['/assignments/history']);
@@ -155,33 +155,8 @@ export class AssignDevice implements OnInit {
         },
         error: err => {
           console.error('Assign error:', err);
-          this.showAppToast(this.getErrorMessage(err, 'Failed to assign device.'), 'error');
+          this.notify.apiError(err, 'Failed to assign device.');
         }
       });
-  }
-
-  showAppToast(message: string, type: 'success' | 'error' = 'success'): void {
-    this.toastMessage = message;
-    this.toastType = type;
-    this.showToast = true;
-
-    setTimeout(() => {
-      this.showToast = false;
-      this.cdr.detectChanges();
-    }, 2500);
-  }
-
-  private getErrorMessage(err: any, fallback: string): string {
-    if (typeof err?.error === 'string') return err.error;
-    if (err?.error?.message) return err.error.message;
-
-    if (err?.error?.errors) {
-      const errors = err.error.errors;
-      return Object.keys(errors)
-        .map(key => errors[key].join(', '))
-        .join(' | ');
-    }
-
-    return fallback;
   }
 }

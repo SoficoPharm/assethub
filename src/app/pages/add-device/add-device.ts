@@ -1,9 +1,10 @@
-import { ChangeDetectorRef, Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, QueryList, ViewChildren, inject } from '@angular/core';
+import { NotificationService } from '../../core/notification.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { DevicesService } from '../../services/devices.service';
+import { DeviceStatus, DevicesService, EDITABLE_DEVICE_STATUSES } from '../../services/devices.service';
 
 interface DeviceForm {
   deviceName: string;
@@ -20,7 +21,7 @@ interface DeviceForm {
   screens: number | null;
   printer: boolean;
   scanner: boolean;
-  initialStatus: string;
+  initialStatus: DeviceStatus;
   notes: string;
   internalNotes: string;
   imageUrl: string;
@@ -36,6 +37,8 @@ interface DeviceForm {
   styleUrls: ['./add-device.scss']
 })
 export class AddDevice {
+  private readonly notify = inject(NotificationService);
+
   @ViewChildren('scanFileInput') scanFileInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   devicesToAdd: DeviceForm[] = [this.createEmptyDevice()];
@@ -44,24 +47,19 @@ export class AddDevice {
   brands = ['Apple', 'Samsung', 'Lenovo', 'Dell', 'HP', 'Vodafone', 'Orange', 'Etisalat'];
   ramOptions = ['N/A', '4 GB', '8 GB', '16 GB', '32 GB', '64 GB'];
   storageOptions = ['N/A', '128 GB', '256 GB', '512 GB', '1 TB', '2 TB'];
-  statusOptions = ['Available', 'Active', 'Assigned', 'Inactive', 'Maintenance', 'Lost'];
+  statusOptions: DeviceStatus[] = EDITABLE_DEVICE_STATUSES;
 
   loading = false;
-  showToast = false;
-  toastMessage = '';
-  toastType: 'success' | 'error' = 'success';
 
   showAddType = false;
   showAddBrand = false;
   showAddRam = false;
   showAddStorage = false;
-  showAddStatus = false;
 
   newType = '';
   newBrand = '';
   newRam = '';
   newStorage = '';
-  newStatus = '';
 
   constructor(
     private readonly router: Router,
@@ -153,9 +151,9 @@ export class AddDevice {
           ipv4Text ? `IPv4: ${ipv4Text}` : ''
         ].filter(Boolean).join('\n');
 
-        this.showAppToast('System info loaded successfully', 'success');
+        this.notify.success('System info loaded successfully');
       } catch {
-        this.showAppToast('Invalid JSON file.', 'error');
+        this.notify.error('Invalid JSON file.');
       }
 
       input.value = '';
@@ -172,7 +170,7 @@ export class AddDevice {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      this.showAppToast('Please select a valid image file.', 'error');
+      this.notify.error('Please select a valid image file.');
       input.value = '';
       return;
     }
@@ -219,7 +217,7 @@ export class AddDevice {
     const invalid = this.devicesToAdd.some(device => !device.deviceName.trim());
 
     if (invalid) {
-      this.showAppToast('Please enter device name.', 'error');
+      this.notify.error('Please enter device name.');
       return;
     }
 
@@ -255,7 +253,7 @@ export class AddDevice {
     forkJoin(requests).subscribe({
       next: () => {
         this.loading = false;
-        this.showAppToast(`${this.devicesToAdd.length} device(s) added successfully`, 'success');
+        this.notify.success(`${this.devicesToAdd.length} device(s) added successfully`);
         this.cdr.detectChanges();
 
         setTimeout(() => this.router.navigate(['/devices']), 500);
@@ -263,20 +261,19 @@ export class AddDevice {
       error: (err) => {
         console.error('Create device error:', err);
         this.loading = false;
-        this.showAppToast(this.getErrorMessage(err), 'error');
+        this.notify.apiError(err, 'Failed to save device.');
         this.cdr.detectChanges();
       }
     });
   }
 
-  toggleAddBox(type: 'type' | 'brand' | 'ram' | 'storage' | 'status'): void {
+  toggleAddBox(type: 'type' | 'brand' | 'ram' | 'storage'): void {
     this.closeAllAddBoxes();
 
     if (type === 'type') this.showAddType = true;
     if (type === 'brand') this.showAddBrand = true;
     if (type === 'ram') this.showAddRam = true;
     if (type === 'storage') this.showAddStorage = true;
-    if (type === 'status') this.showAddStatus = true;
   }
 
   closeAllAddBoxes(): void {
@@ -284,7 +281,6 @@ export class AddDevice {
     this.showAddBrand = false;
     this.showAddRam = false;
     this.showAddStorage = false;
-    this.showAddStatus = false;
   }
 
   addDeviceType(): void {
@@ -337,43 +333,5 @@ export class AddDevice {
     this.devicesToAdd[this.devicesToAdd.length - 1].storage1 = value;
     this.newStorage = '';
     this.showAddStorage = false;
-  }
-
-  addStatus(): void {
-    const value = this.newStatus.trim();
-    if (!value) return;
-
-    if (!this.statusOptions.includes(value)) {
-      this.statusOptions.push(value);
-    }
-
-    this.devicesToAdd[this.devicesToAdd.length - 1].initialStatus = value;
-    this.newStatus = '';
-    this.showAddStatus = false;
-  }
-
-  showAppToast(message: string, type: 'success' | 'error' = 'success'): void {
-    this.toastMessage = message;
-    this.toastType = type;
-    this.showToast = true;
-
-    setTimeout(() => {
-      this.showToast = false;
-      this.cdr.detectChanges();
-    }, 2500);
-  }
-
-  private getErrorMessage(err: any): string {
-    if (typeof err?.error === 'string') return err.error;
-    if (err?.error?.message) return err.error.message;
-
-    if (err?.error?.errors) {
-      const errors = err.error.errors;
-      return Object.keys(errors)
-        .map(key => errors[key].join(', '))
-        .join(' | ');
-    }
-
-    return err?.message || 'Failed to save device.';
   }
 }

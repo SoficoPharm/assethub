@@ -29,15 +29,6 @@
 
           <h2>{{ fullName || 'Employee' }} ({{ employeeId }})</h2>
         </div>
-
-        <div class="edited-badge">
-          <svg viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="8"></circle>
-            <path d="M12 8v4"></path>
-            <path d="M12 16h.01"></path>
-          </svg>
-          Last edited by admin
-        </div>
       </div>
 
       <div class="card">
@@ -103,7 +94,7 @@
                 type="button"
                 class="add-mini-btn"
                 [disabled]="saving || deleting"
-                (click)="toggleAddBox('department')"
+                (click)="toggleAddDepartment()"
               >
                 + Add
               </button>
@@ -119,7 +110,7 @@
                 />
 
                 <div class="inline-add-actions">
-                  <button type="button" class="save-mini-btn" (click)="addDepartment()">
+                  <button type="button" class="save-mini-btn" [disabled]="addingDepartment" (click)="addDepartment()">
                     Add
                   </button>
 
@@ -140,52 +131,6 @@
               [disabled]="saving || deleting"
               placeholder="e.g. Senior Developer"
             />
-          </div>
-
-          <div class="form-group">
-            <label>System Role <span>*</span></label>
-
-            <div class="select-add-row">
-              <select
-                [(ngModel)]="role"
-                name="role"
-                [disabled]="saving || deleting"
-              >
-                @for (item of roles; track item) {
-                  <option [value]="item">{{ item }}</option>
-                }
-              </select>
-
-              <button
-                type="button"
-                class="add-mini-btn"
-                [disabled]="saving || deleting"
-                (click)="toggleAddBox('role')"
-              >
-                + Add
-              </button>
-            </div>
-
-            @if (showAddRole) {
-              <div class="inline-add-box">
-                <input
-                  type="text"
-                  [(ngModel)]="newRole"
-                  name="newRole"
-                  placeholder="e.g. Team Lead"
-                />
-
-                <div class="inline-add-actions">
-                  <button type="button" class="save-mini-btn" (click)="addRole()">
-                    Add
-                  </button>
-
-                  <button type="button" class="cancel-mini-btn" (click)="closeAllAddBoxes()">
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            }
           </div>
         </div>
 
@@ -290,11 +235,6 @@
           </div>
         </div>
 
-        @if (showToast) {
-          <div class="success-toast" [class.error-toast]="toastType === 'error'">
-            {{ toastMessage }}
-          </div>
-        }
       </div>
     </div>
   }

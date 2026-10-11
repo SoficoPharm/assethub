@@ -1,4 +1,6 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../core/notification.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -12,6 +14,9 @@ import { DepartmentsService, Department, CreateDepartment } from '../../services
   styleUrls: ['./departments.scss']
 })
 export class Departments implements OnInit {
+  protected readonly auth = inject(AuthService);
+  private readonly notify = inject(NotificationService);
+
   departmentName = '';
   managerName = '';
   membersCount = 0;
@@ -23,9 +28,6 @@ export class Departments implements OnInit {
   isSaving = false;
   deletingId: number | null = null;
 
-  showToast = false;
-  toastMessage = '';
-  toastType: 'success' | 'error' = 'success';
 
   constructor(
     private readonly departmentsService: DepartmentsService,
@@ -51,14 +53,14 @@ export class Departments implements OnInit {
         },
         error: (err) => {
           console.error('Departments error:', err);
-          this.showToastMessage(this.getErrorMessage(err, 'Error loading departments'), 'error');
+          this.notify.apiError(err, 'Error loading departments');
         }
       });
   }
 
   createOrUpdateDepartment(): void {
     if (!this.departmentName.trim()) {
-      this.showToastMessage('Please enter department name.', 'error');
+      this.notify.error('Please enter department name.');
       return;
     }
 
@@ -81,16 +83,15 @@ export class Departments implements OnInit {
       }))
       .subscribe({
         next: () => {
-          this.showToastMessage(
-            this.editId !== null ? 'Department updated successfully' : 'Department created successfully',
-            'success'
+          this.notify.success(
+            this.editId !== null ? 'Department updated successfully' : 'Department created successfully'
           );
           this.resetForm();
           this.loadDepartments();
         },
         error: (err) => {
           console.error('Save department error:', err);
-          this.showToastMessage(this.getErrorMessage(err, 'Error saving department'), 'error');
+          this.notify.apiError(err, 'Error saving department');
         }
       });
   }
@@ -119,13 +120,13 @@ export class Departments implements OnInit {
       }))
       .subscribe({
         next: () => {
-          this.showToastMessage('Department deleted successfully', 'success');
+          this.notify.success('Department deleted successfully');
           this.resetForm();
           this.loadDepartments();
         },
         error: (err) => {
           console.error('Delete department error:', err);
-          this.showToastMessage(this.getErrorMessage(err, 'Error deleting department'), 'error');
+          this.notify.apiError(err, 'Error deleting department');
         }
       });
   }
@@ -140,30 +141,5 @@ export class Departments implements OnInit {
     this.managerName = '';
     this.membersCount = 0;
     this.editId = null;
-  }
-
-  showToastMessage(message: string, type: 'success' | 'error' = 'success'): void {
-    this.toastMessage = message;
-    this.toastType = type;
-    this.showToast = true;
-
-    setTimeout(() => {
-      this.showToast = false;
-      this.cdr.detectChanges();
-    }, 2500);
-  }
-
-  private getErrorMessage(err: any, fallback: string): string {
-    if (typeof err?.error === 'string') return err.error;
-    if (err?.error?.message) return err.error.message;
-
-    if (err?.error?.errors) {
-      const errors = err.error.errors;
-      return Object.keys(errors)
-        .map(key => errors[key].join(', '))
-        .join(' | ');
-    }
-
-    return fallback;
   }
 }

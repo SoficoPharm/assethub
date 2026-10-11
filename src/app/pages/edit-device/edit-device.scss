@@ -312,21 +312,7 @@
   border: 0;
   background: #35b77c;
   color: #fff;
-}
-.success-toast {
-  position: fixed;
-  right: 24px;
-  top: 90px;
-  z-index: 9999;
-  background: #35b77c;
-  color: #fff;
-  padding: 13px 18px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 700;
-  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.18);
-}
-.center-loader {
+}.center-loader {
   position: fixed;
   inset: 0;
   background: rgba(255, 255, 255, 0.7);
@@ -422,10 +408,6 @@
   }
 }
 
-.error-toast {
-  background: #dc2626 !important;
-}
-
 button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -471,5 +453,28 @@ button:disabled {
 
   .right-actions {
     flex-direction: column;
+  }
+}
+.checkbox-row {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.checkbox-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 600;
+
+  input {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    box-shadow: none;
+    accent-color: #35b77c;
   }
 }

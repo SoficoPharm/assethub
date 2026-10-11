@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -19,14 +19,6 @@ export class AuditLogsService {
 
   constructor(private readonly http: HttpClient) {}
 
-  private headers(): HttpHeaders {
-    const token = localStorage.getItem('token');
-
-    return token
-      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
-      : new HttpHeaders();
-  }
-
   getAll(search = '', action = 'All'): Observable<AuditLog[]> {
     let params = new HttpParams();
 
@@ -38,15 +30,10 @@ export class AuditLogsService {
       params = params.set('action', action);
     }
 
-    return this.http.get<AuditLog[]>(`${this.api}/AuditLogs`, {
-      headers: this.headers(),
-      params
-    });
+    return this.http.get<AuditLog[]>(`${this.api}/AuditLogs`, { params });
   }
 
   clearAll(): Observable<unknown> {
-    return this.http.delete(`${this.api}/AuditLogs/clear`, {
-      headers: this.headers()
-    });
+    return this.http.delete(`${this.api}/AuditLogs/clear`);
   }
 }

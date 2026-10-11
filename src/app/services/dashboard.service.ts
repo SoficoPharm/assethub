@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
@@ -39,12 +39,6 @@ export class DashboardService {
   constructor(private readonly http: HttpClient) {}
 
   getDashboard(): Observable<DashboardResponse> {
-    const token = localStorage.getItem('token');
-
-    const headers = token
-      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
-      : new HttpHeaders();
-
-    return this.http.get<DashboardResponse>(`${this.api}/Dashboard`, { headers });
+    return this.http.get<DashboardResponse>(`${this.api}/Dashboard`);
   }
 }

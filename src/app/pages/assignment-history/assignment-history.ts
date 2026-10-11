@@ -1,4 +1,6 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { NotificationService } from '../../core/notification.service';
+import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -12,6 +14,9 @@ import { AssignmentRow, AssignmentsService } from '../../services/assignments.se
   styleUrls: ['./assignment-history.scss']
 })
 export class AssignmentHistory implements OnInit {
+  protected readonly auth = inject(AuthService);
+  private readonly notify = inject(NotificationService);
+
   searchText = '';
   selectedStatus: 'All' | 'Active' | 'Returned' = 'All';
   selectedDateRange: 'All' | 'Last 30 Days' | 'This Year' = 'All';
@@ -23,6 +28,7 @@ export class AssignmentHistory implements OnInit {
 
   loading = false;
   errorMessage = '';
+  returningId: number | null = null;
 
   constructor(
     private readonly assignmentsService: AssignmentsService,
@@ -81,6 +87,28 @@ export class AssignmentHistory implements OnInit {
 
       return matchesSearch && matchesStatus && matchesDateRange;
     });
+  }
+
+  returnDevice(row: AssignmentRow): void {
+    if (this.returningId !== null) return;
+
+    const confirmed = confirm(`Return ${row.device} from ${row.user}?`);
+    if (!confirmed) return;
+
+    this.returningId = row.dbId;
+
+    this.assignmentsService.returnDevice(row.dbId)
+      .pipe(finalize(() => {
+        this.returningId = null;
+        this.cdr.detectChanges();
+      }))
+      .subscribe({
+        next: () => {
+          this.notify.success(`${row.device} returned`);
+          this.loadAssignments();
+        },
+        error: err => this.notify.apiError(err, 'Failed to return device.')
+      });
   }
 
   setStatus(status: 'All' | 'Active' | 'Returned'): void {

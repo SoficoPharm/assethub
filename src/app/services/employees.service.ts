@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
@@ -11,7 +11,6 @@ export interface EmployeeRow {
   department: string;
   title: string;
   jobTitle?: string;
-  role: string;
   devices: number;
   images: number;
   initials: string;
@@ -25,7 +24,6 @@ export interface EmployeeRequest {
   employeeId: string;
   department: string;
   jobTitle: string;
-  role: string;
   images: number;
   imageUrl?: string;
   imageFile?: File | null;
@@ -38,14 +36,6 @@ export class EmployeesService {
 
   constructor(private readonly http: HttpClient) {}
 
-  private headers(): HttpHeaders {
-    const token = localStorage.getItem('token');
-
-    return token
-      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
-      : new HttpHeaders();
-  }
-
   private toFormData(data: EmployeeRequest): FormData {
     const formData = new FormData();
 
@@ -54,7 +44,6 @@ export class EmployeesService {
     formData.append('EmployeeId', data.employeeId ?? '');
     formData.append('Department', data.department ?? '');
     formData.append('JobTitle', data.jobTitle ?? '');
-    formData.append('Role', data.role ?? 'Viewer');
     formData.append('Images', String(data.images ?? 0));
     formData.append('ImageUrl', data.imageUrl ?? '');
     formData.append('UserDomain', data.userDomain ?? '');
@@ -67,38 +56,26 @@ export class EmployeesService {
   }
 
   getEmployees(): Observable<EmployeeRow[]> {
-    return this.http.get<EmployeeRow[]>(`${this.api}/Users`, {
-      headers: this.headers()
-    });
+    return this.http.get<EmployeeRow[]>(`${this.api}/Users`);
   }
 
   getEmployeeById(id: number): Observable<EmployeeRow> {
-    return this.http.get<EmployeeRow>(`${this.api}/Users/${id}`, {
-      headers: this.headers()
-    });
+    return this.http.get<EmployeeRow>(`${this.api}/Users/${id}`);
   }
 
   getEmployeeByEmployeeId(employeeId: string): Observable<EmployeeRow> {
-    return this.http.get<EmployeeRow>(`${this.api}/Users/by-employee/${employeeId}`, {
-      headers: this.headers()
-    });
+    return this.http.get<EmployeeRow>(`${this.api}/Users/by-employee/${employeeId}`);
   }
 
   createEmployee(data: EmployeeRequest): Observable<unknown> {
-    return this.http.post(`${this.api}/Users`, this.toFormData(data), {
-      headers: this.headers()
-    });
+    return this.http.post(`${this.api}/Users`, this.toFormData(data));
   }
 
   updateEmployee(id: number, data: EmployeeRequest): Observable<unknown> {
-    return this.http.put(`${this.api}/Users/${id}`, this.toFormData(data), {
-      headers: this.headers()
-    });
+    return this.http.put(`${this.api}/Users/${id}`, this.toFormData(data));
   }
 
   deleteEmployee(id: number): Observable<unknown> {
-    return this.http.delete(`${this.api}/Users/${id}`, {
-      headers: this.headers()
-    });
+    return this.http.delete(`${this.api}/Users/${id}`);
   }
 }

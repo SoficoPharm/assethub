@@ -192,30 +192,15 @@
 .actions button.delete {
   color: #dc2626;
 }
-
-.success-toast {
-  position: fixed;
-  right: 24px;
-  top: 90px;
-  z-index: 9999;
-  background: #35b77c;
-  color: #fff;
-  padding: 13px 18px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 700;
-  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.18);
-}
 button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
-}
-
-.error-toast {
-  background: #dc2626 !important;
 }
 @media (max-width: 1000px) {
   .types-grid {
     grid-template-columns: 1fr;
   }
+}
+.types-grid.read-only {
+  grid-template-columns: 1fr;
 }

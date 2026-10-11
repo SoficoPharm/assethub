@@ -120,11 +120,6 @@
     </button>
   </div>
 
-  @if (showToast) {
-    <div class="success-toast" [class.error-toast]="toastType === 'error'">
-      {{ toastMessage }}
-    </div>
-  }
 
   @if (assigning) {
     <div class="page-loader">

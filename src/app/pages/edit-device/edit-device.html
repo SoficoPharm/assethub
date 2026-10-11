@@ -22,14 +22,6 @@
         <h2>{{ deviceName || 'Device' }} ({{ deviceCode }})</h2>
       </div>
 
-      <div class="edited-badge">
-        <svg viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="8"></circle>
-          <path d="M12 8v4"></path>
-          <path d="M12 16h.01"></path>
-        </svg>
-        Last edited by admin
-      </div>
     </div>
 
     <div class="form-card">
@@ -75,15 +67,23 @@
 
         <div class="grid two-cols">
           <div class="form-group">
+            <label>IMEI</label>
+            <input type="text" name="imeiSerial" [(ngModel)]="imeiSerial" />
+          </div>
+
+          <div class="form-group">
             <label>Serial Number</label>
             <input type="text" name="serialNumber" [(ngModel)]="serialNumber" />
           </div>
+        </div>
 
+        <div class="grid two-cols">
           <div class="form-group">
             <label>Device Image URL</label>
             <input type="text" name="imageUrl" [(ngModel)]="imageUrl" />
           </div>
         </div>
+
       </div>
 
       <div class="section-block">
@@ -183,10 +183,45 @@
           </div>
         </div>
 
-        <div class="grid one-col">
+        <div class="grid two-cols">
           <div class="form-group">
             <label>Storage 2</label>
             <input type="text" name="storage2" [(ngModel)]="storage2" />
+          </div>
+
+          <div class="form-group">
+            <label>Screens</label>
+            <input type="number" min="0" name="screens" [(ngModel)]="screens" />
+          </div>
+        </div>
+
+        <div class="grid two-cols">
+          <div class="form-group">
+            <label>CPU</label>
+            <input type="text" name="cpu" [(ngModel)]="cpu" />
+          </div>
+
+          <div class="form-group">
+            <label>GPU</label>
+            <input type="text" name="gpu" [(ngModel)]="gpu" />
+          </div>
+        </div>
+
+        <div class="grid one-col">
+          <div class="form-group">
+            <label>Accessories</label>
+
+            <div class="checkbox-row">
+              <label class="checkbox-item">
+                <input type="checkbox" name="printer" [(ngModel)]="printer" />
+                <span>Printer</span>
+              </label>
+
+              <label class="checkbox-item">
+                <input type="checkbox" name="scanner" [(ngModel)]="scanner" />
+                <span>Scanner</span>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -198,29 +233,19 @@
           <div class="form-group">
             <label>Status</label>
 
-            <div class="select-add-row">
-              <select class="status-select" name="status" [(ngModel)]="status">
-                @for (item of statusOptions; track item) {
-                  <option [value]="item">{{ item }}</option>
-                }
-              </select>
+            <select class="status-select" name="status" [(ngModel)]="status">
+              @for (item of statusOptions; track item) {
+                <option [value]="item">{{ item }}</option>
+              }
+            </select>
 
-              <button type="button" class="add-mini-btn" (click)="toggleAddBox('status')">
-                + Add
-              </button>
-            </div>
-
-            @if (showAddStatus) {
-              <div class="inline-add-box">
-                <input type="text" name="newStatus" [(ngModel)]="newStatus" placeholder="e.g. Maintenance" />
-                <div class="inline-add-actions">
-                  <button type="button" class="save-mini-btn" (click)="addStatus()">Add</button>
-                  <button type="button" class="cancel-mini-btn" (click)="closeAllAddBoxes()">Cancel</button>
-                </div>
-              </div>
+            @if (willReturnDevice) {
+              <div class="hint-text">Saving will return this device from {{ assignedUser || 'its employee' }}.</div>
+            } @else if (originalStatus === 'Assigned') {
+              <div class="hint-text">Assigned to {{ assignedUser }}. Return it from Assignment History, or choose another status.</div>
+            } @else {
+              <div class="hint-text">To assign this device, use Assignments.</div>
             }
-
-            <div class="hint-text">Current status: {{ status }}</div>
           </div>
         </div>
 
@@ -259,9 +284,4 @@
     </div>
   </div>
 
-  @if (showToast) {
-    <div class="success-toast" [class.error-toast]="toastType === 'error'">
-      {{ toastMessage }}
-    </div>
-  }
 </section>

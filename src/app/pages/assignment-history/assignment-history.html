@@ -62,17 +62,20 @@
 
   @if (!loading) {
     <div class="table-card">
-      <div class="table-head grid-row">
+      <div class="table-head grid-row" [class.with-actions]="auth.canEdit()">
         <div>ID</div>
         <div>Employee</div>
         <div>Device</div>
         <div>Assigned Date</div>
         <div>Returned Date</div>
         <div>Status</div>
+        @if (auth.canEdit()) {
+          <div>Actions</div>
+        }
       </div>
 
       @for (row of filteredRows; track row.id) {
-        <div class="table-row grid-row">
+        <div class="table-row grid-row" [class.with-actions]="auth.canEdit()">
           <div class="id">{{ row.id }}</div>
 
           <div class="user-cell">
@@ -93,6 +96,21 @@
               {{ row.status }}
             </span>
           </div>
+
+          @if (auth.canEdit()) {
+            <div>
+              @if (row.status === 'Active') {
+                <button
+                  type="button"
+                  class="return-btn"
+                  [disabled]="returningId !== null"
+                  (click)="returnDevice(row)"
+                >
+                  {{ returningId === row.dbId ? 'Returning...' : 'Return' }}
+                </button>
+              }
+            </div>
+          }
         </div>
       }
 

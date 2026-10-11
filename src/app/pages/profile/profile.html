@@ -77,5 +77,51 @@
         </div>
       </div>
     </div>
+
+    <div class="card change-password-card">
+      <h3>Change Password</h3>
+
+      <form class="password-form" (ngSubmit)="changePassword()" autocomplete="off">
+        <div class="form-group">
+          <label for="currentPassword">Current Password</label>
+          <input
+            id="currentPassword"
+            type="password"
+            name="currentPassword"
+            autocomplete="current-password"
+            [(ngModel)]="currentPassword"
+            [disabled]="changingPassword"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <input
+            id="newPassword"
+            type="password"
+            name="newPassword"
+            autocomplete="new-password"
+            [(ngModel)]="newPassword"
+            [disabled]="changingPassword"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm New Password</label>
+          <input
+            id="confirmPassword"
+            type="password"
+            name="confirmPassword"
+            autocomplete="new-password"
+            [(ngModel)]="confirmPassword"
+            [disabled]="changingPassword"
+          />
+        </div>
+
+        <button class="primary-btn" type="submit" [disabled]="changingPassword">
+          {{ changingPassword ? 'Saving...' : 'Change Password' }}
+        </button>
+      </form>
+    </div>
   }
 </section>

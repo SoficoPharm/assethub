@@ -6,7 +6,7 @@
 
   <div class="card-wrap">
     <div class="section-title-row">
-      <button class="back-btn" type="button" [disabled]="loading" (click)="backToList()">
+      <button class="back-btn" type="button" [disabled]="saving" (click)="backToList()">
         <svg viewBox="0 0 24 24" fill="none">
           <path d="M15 18l-6-6 6-6"></path>
         </svg>
@@ -23,7 +23,7 @@
             type="text"
             [(ngModel)]="fullName"
             name="fullName"
-            [disabled]="loading"
+            [disabled]="saving"
             placeholder="e.g. Jane Doe"
           />
         </div>
@@ -34,7 +34,7 @@
             type="email"
             [(ngModel)]="email"
             name="email"
-            [disabled]="loading"
+            [disabled]="saving"
             placeholder="jane.doe@assethub.local"
           />
         </div>
@@ -45,7 +45,7 @@
             type="text"
             [(ngModel)]="employeeId"
             name="employeeId"
-            [disabled]="loading"
+            [disabled]="saving"
             placeholder="e.g. EMP-123"
           />
         </div>
@@ -55,7 +55,7 @@
     type="text"
     [(ngModel)]="userDomain"
     name="userDomain"
-    [disabled]="loading"
+    [disabled]="saving"
     placeholder="e.g. SOFICOPHARM\username"
   />
 </div>
@@ -64,7 +64,7 @@
           <label>Department</label>
 
           <div class="select-add-row">
-            <select [(ngModel)]="department" name="department" [disabled]="loading">
+            <select [(ngModel)]="department" name="department" [disabled]="saving">
               <option value="">Select department</option>
               @for (item of departments; track item) {
                 <option [value]="item">{{ item }}</option>
@@ -74,8 +74,8 @@
             <button
               type="button"
               class="add-mini-btn"
-              [disabled]="loading"
-              (click)="toggleAddBox('department')"
+              [disabled]="saving"
+              (click)="toggleAddDepartment()"
             >
               + Add
             </button>
@@ -91,7 +91,7 @@
               />
 
               <div class="inline-add-actions">
-                <button type="button" class="save-mini-btn" (click)="addDepartment()">Add</button>
+                <button type="button" class="save-mini-btn" [disabled]="addingDepartment" (click)="addDepartment()">Add</button>
                 <button type="button" class="cancel-mini-btn" (click)="closeAllAddBoxes()">Cancel</button>
               </div>
             </div>
@@ -104,57 +104,20 @@
             type="text"
             [(ngModel)]="jobTitle"
             name="jobTitle"
-            [disabled]="loading"
+            [disabled]="saving"
             placeholder="e.g. Senior Developer"
           />
-        </div>
-
-        <div class="form-group">
-          <label>System Role <span>*</span></label>
-
-          <div class="select-add-row">
-            <select [(ngModel)]="role" name="role" [disabled]="loading">
-              @for (item of roles; track item) {
-                <option [value]="item">{{ item }}</option>
-              }
-            </select>
-
-            <button
-              type="button"
-              class="add-mini-btn"
-              [disabled]="loading"
-              (click)="toggleAddBox('role')"
-            >
-              + Add
-            </button>
-          </div>
-
-          @if (showAddRole) {
-            <div class="inline-add-box">
-              <input
-                type="text"
-                [(ngModel)]="newRole"
-                name="newRole"
-                placeholder="e.g. Team Lead"
-              />
-
-              <div class="inline-add-actions">
-                <button type="button" class="save-mini-btn" (click)="addRole()">Add</button>
-                <button type="button" class="cancel-mini-btn" (click)="closeAllAddBoxes()">Cancel</button>
-              </div>
-            </div>
-          }
         </div>
       </div>
 
       <div class="images-section">
         <div class="section-label">Employee Image</div>
 
-        <label class="upload-box" [class.disabled]="loading">
+        <label class="upload-box" [class.disabled]="saving">
           <input
             type="file"
             accept="image/*"
-            [disabled]="loading"
+            [disabled]="saving"
             (change)="onImageSelected($event)"
           />
 
@@ -187,7 +150,7 @@
               <button
                 type="button"
                 class="remove-image-btn"
-                [disabled]="loading"
+                [disabled]="saving"
                 (click)="removeImage()"
               >
                 Remove
@@ -198,24 +161,19 @@
       </div>
 
       <div class="actions">
-        <button class="secondary-btn" type="button" [disabled]="loading" (click)="cancel()">
+        <button class="secondary-btn" type="button" [disabled]="saving" (click)="cancel()">
           Cancel
         </button>
 
-        <button class="primary-btn" type="button" [disabled]="loading" (click)="saveEmployee()">
+        <button class="primary-btn" type="button" [disabled]="saving" (click)="saveEmployee()">
           Save Employee
         </button>
       </div>
 
-      @if (showToast) {
-        <div class="success-toast" [class.error-toast]="toastType === 'error'">
-          {{ toastMessage }}
-        </div>
-      }
     </div>
   </div>
 
-  @if (loading) {
+  @if (saving) {
     <div class="page-loader">
       <div class="spinner"></div>
       <span>Saving employee...</span>

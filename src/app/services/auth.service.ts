@@ -1,6 +1,8 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
+import { Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { EDIT_ROLES, Role, Roles } from '../core/roles';
 
 export interface LoginRequest {
   userName: string;
@@ -11,8 +13,16 @@ export interface CurrentUser {
   id: number;
   fullName: string;
   userName: string;
-  role: string;
+  role: Role;
 }
+
+interface LoginResponse {
+  token: string;
+  user: CurrentUser;
+}
+
+const TOKEN_KEY = 'token';
+const USER_KEY = 'currentUser';
 
 @Injectable({
   providedIn: 'root'
@@ -20,26 +30,58 @@ export interface CurrentUser {
 export class AuthService {
   private readonly api = environment.apiUrl;
 
+  private readonly user = signal<CurrentUser | null>(this.readStoredUser());
+
+  /** The signed-in system user, or null. */
+  readonly currentUser = this.user.asReadonly();
+
+  readonly canEditSignal = computed(() => this.hasRole(...EDIT_ROLES));
+  readonly isSuperAdminSignal = computed(() => this.hasRole(Roles.SuperAdmin));
+
   constructor(private readonly http: HttpClient) {}
 
-  login(data: LoginRequest) {
-    return this.http.post(`${this.api}/Auth/login`, data);
-  }
-
-  saveToken(token: string): void {
-    localStorage.setItem('token', token);
+  login(data: LoginRequest): Observable<LoginResponse> {
+    return this.http
+      .post<LoginResponse>(`${this.api}/Auth/login`, data)
+      .pipe(tap(res => this.saveSession(res.token, res.user)));
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return localStorage.getItem(TOKEN_KEY);
   }
 
-  saveCurrentUser(user: CurrentUser): void {
-    localStorage.setItem('currentUser', JSON.stringify(user));
+  isLoggedIn(): boolean {
+    const token = this.getToken();
+    return !!token && !this.isExpired(token) && !!this.user();
   }
 
-  getCurrentUser(): CurrentUser | null {
-    const raw = localStorage.getItem('currentUser');
+  hasRole(...roles: Role[]): boolean {
+    const role = this.user()?.role;
+    return !!role && roles.includes(role);
+  }
+
+  canEdit(): boolean {
+    return this.canEditSignal();
+  }
+
+  isSuperAdmin(): boolean {
+    return this.isSuperAdminSignal();
+  }
+
+  logout(): void {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    this.user.set(null);
+  }
+
+  private saveSession(token: string, user: CurrentUser): void {
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    this.user.set(user);
+  }
+
+  private readStoredUser(): CurrentUser | null {
+    const raw = localStorage.getItem(USER_KEY);
 
     if (!raw) return null;
 
@@ -50,16 +92,13 @@ export class AuthService {
     }
   }
 
-  getRole(): string {
-    return this.getCurrentUser()?.role || '';
-  }
-
-  isLoggedIn(): boolean {
-    return !!this.getToken();
-  }
-
-  logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('currentUser');
+  /** Reads the JWT exp claim. The server still validates the token; this only avoids a pointless round trip. */
+  private isExpired(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      return typeof payload.exp === 'number' && payload.exp * 1000 <= Date.now();
+    } catch {
+      return true;
+    }
   }
 }

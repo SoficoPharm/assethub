@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -22,35 +22,19 @@ export class DepartmentsService {
 
   constructor(private readonly http: HttpClient) {}
 
-  private headers(): HttpHeaders {
-    const token = localStorage.getItem('token');
-
-    return token
-      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
-      : new HttpHeaders();
-  }
-
   getDepartments(): Observable<Department[]> {
-    return this.http.get<Department[]>(`${this.api}/Departments`, {
-      headers: this.headers()
-    });
+    return this.http.get<Department[]>(`${this.api}/Departments`);
   }
 
   createDepartment(data: CreateDepartment): Observable<Department> {
-    return this.http.post<Department>(`${this.api}/Departments`, data, {
-      headers: this.headers()
-    });
+    return this.http.post<Department>(`${this.api}/Departments`, data);
   }
 
   updateDepartment(id: number, data: CreateDepartment): Observable<unknown> {
-    return this.http.put(`${this.api}/Departments/${id}`, data, {
-      headers: this.headers()
-    });
+    return this.http.put(`${this.api}/Departments/${id}`, data);
   }
 
   deleteDepartment(id: number): Observable<unknown> {
-    return this.http.delete(`${this.api}/Departments/${id}`, {
-      headers: this.headers()
-    });
+    return this.http.delete(`${this.api}/Departments/${id}`);
   }
 }

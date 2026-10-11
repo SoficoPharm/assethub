@@ -1,9 +1,10 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
-import { DeviceRow, DevicesService } from '../../services/devices.service';
+import { DEVICE_STATUSES, DeviceRow, DevicesService } from '../../services/devices.service';
 
 @Component({
   selector: 'app-devices-list',
@@ -13,11 +14,13 @@ import { DeviceRow, DevicesService } from '../../services/devices.service';
   styleUrls: ['./devices-list.scss']
 })
 export class DevicesList implements OnInit {
+  protected readonly auth = inject(AuthService);
+
   searchText = '';
   selectedStatus = 'All';
   selectedType = 'All';
 
-  statuses = ['All', 'Active', 'Available', 'Inactive', 'Lost', 'Maintenance', 'Assigned'];
+  statuses: string[] = ['All', ...DEVICE_STATUSES];
   types = ['All', 'Mobile', 'Laptop', 'Tablet', 'Desktop', 'Bag', 'SIM Line'];
 
   devices: DeviceRow[] = [];

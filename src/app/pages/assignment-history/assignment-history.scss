@@ -111,6 +111,25 @@
   align-items: center;
 }
 
+.grid-row.with-actions {
+  grid-template-columns: 80px 160px 1.3fr 150px 150px 110px 100px;
+}
+
+.return-btn {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid #111827;
+  border-radius: 8px;
+  background: #fff;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
 .table-head {
   min-height: 52px;
   padding: 0 16px;

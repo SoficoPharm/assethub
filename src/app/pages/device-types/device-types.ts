@@ -1,4 +1,6 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../core/notification.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -16,6 +18,9 @@ import {
   styleUrls: ['./device-types.scss']
 })
 export class DeviceTypes implements OnInit {
+  protected readonly auth = inject(AuthService);
+  private readonly notify = inject(NotificationService);
+
   typeName = '';
   countValue = 0;
   selectedIcon = '📱';
@@ -28,9 +33,6 @@ export class DeviceTypes implements OnInit {
   isSaving = false;
   deletingId: number | null = null;
 
-  showToast = false;
-  toastMessage = '';
-  toastType: 'success' | 'error' = 'success';
 
   iconOptions: string[] = ['📱', '💻', '⌨️', '🖥️', '📦', '🖨️', '📡', '🎧'];
 
@@ -56,19 +58,18 @@ export class DeviceTypes implements OnInit {
       .subscribe({
         next: (data) => {
           this.types = data ?? [];
-          this.syncDeviceTypeDropdownOptions();
           this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Device types error:', err);
-          this.showToastMessage(this.getErrorMessage(err, 'Error loading device types'), 'error');
+          this.notify.apiError(err, 'Error loading device types');
         }
       });
   }
 
   createOrUpdateType(): void {
     if (!this.typeName.trim()) {
-      this.showToastMessage('Please enter type name.', 'error');
+      this.notify.error('Please enter type name.');
       return;
     }
 
@@ -93,9 +94,8 @@ export class DeviceTypes implements OnInit {
       )
       .subscribe({
         next: () => {
-          this.showToastMessage(
-            this.editId !== null ? 'Device type updated successfully' : 'Device type created successfully',
-            'success'
+          this.notify.success(
+            this.editId !== null ? 'Device type updated successfully' : 'Device type created successfully'
           );
 
           this.resetForm();
@@ -103,7 +103,7 @@ export class DeviceTypes implements OnInit {
         },
         error: (err) => {
           console.error('Save device type error:', err);
-          this.showToastMessage(this.getErrorMessage(err, 'Error saving device type'), 'error');
+          this.notify.apiError(err, 'Error saving device type');
         }
       });
   }
@@ -134,13 +134,13 @@ export class DeviceTypes implements OnInit {
       )
       .subscribe({
         next: () => {
-          this.showToastMessage('Device type deleted successfully', 'success');
+          this.notify.success('Device type deleted successfully');
           this.resetForm();
           this.loadTypes();
         },
         error: (err) => {
           console.error('Delete device type error:', err);
-          this.showToastMessage(this.getErrorMessage(err, 'Error deleting device type'), 'error');
+          this.notify.apiError(err, 'Error deleting device type');
         }
       });
   }
@@ -160,35 +160,5 @@ export class DeviceTypes implements OnInit {
     this.countValue = 0;
     this.selectedIcon = '📱';
     this.editId = null;
-  }
-
-  syncDeviceTypeDropdownOptions(): void {
-    const names = this.types.map(type => type.typeName);
-    localStorage.setItem('assethub_device_types', JSON.stringify(names));
-  }
-
-  showToastMessage(message: string, type: 'success' | 'error' = 'success'): void {
-    this.toastMessage = message;
-    this.toastType = type;
-    this.showToast = true;
-
-    setTimeout(() => {
-      this.showToast = false;
-      this.cdr.detectChanges();
-    }, 2500);
-  }
-
-  private getErrorMessage(err: any, fallback: string): string {
-    if (typeof err?.error === 'string') return err.error;
-    if (err?.error?.message) return err.error.message;
-
-    if (err?.error?.errors) {
-      const errors = err.error.errors;
-      return Object.keys(errors)
-        .map(key => errors[key].join(', '))
-        .join(' | ');
-    }
-
-    return fallback;
   }
 }

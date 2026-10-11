@@ -20,7 +20,7 @@
   </div>
 
   <nav class="menu">
-    @for (item of menuItems; track item.label) {
+    @for (item of menuItems(); track item.label) {
       <div class="menu-group">
         @if (item.route) {
           <a

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -22,35 +22,19 @@ export class DeviceTypesService {
 
   constructor(private readonly http: HttpClient) {}
 
-  private headers(): HttpHeaders {
-    const token = localStorage.getItem('token');
-
-    return token
-      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
-      : new HttpHeaders();
-  }
-
   getAll(): Observable<DeviceType[]> {
-    return this.http.get<DeviceType[]>(`${this.api}/DeviceTypes`, {
-      headers: this.headers()
-    });
+    return this.http.get<DeviceType[]>(`${this.api}/DeviceTypes`);
   }
 
   create(data: CreateDeviceType): Observable<DeviceType> {
-    return this.http.post<DeviceType>(`${this.api}/DeviceTypes`, data, {
-      headers: this.headers()
-    });
+    return this.http.post<DeviceType>(`${this.api}/DeviceTypes`, data);
   }
 
   update(id: number, data: CreateDeviceType): Observable<unknown> {
-    return this.http.put(`${this.api}/DeviceTypes/${id}`, data, {
-      headers: this.headers()
-    });
+    return this.http.put(`${this.api}/DeviceTypes/${id}`, data);
   }
 
   delete(id: number): Observable<unknown> {
-    return this.http.delete(`${this.api}/DeviceTypes/${id}`, {
-      headers: this.headers()
-    });
+    return this.http.delete(`${this.api}/DeviceTypes/${id}`);
   }
 }

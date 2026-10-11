@@ -1,4 +1,6 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../core/notification.service';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -23,6 +25,9 @@ interface AuditRow {
   styleUrls: ['./audit-logs.scss']
 })
 export class AuditLogs implements OnInit, OnDestroy {
+  protected readonly auth = inject(AuthService);
+  private readonly notify = inject(NotificationService);
+
   searchText = '';
   selectedAction = 'All';
 
@@ -33,9 +38,6 @@ export class AuditLogs implements OnInit, OnDestroy {
   isLoading = false;
   errorMessage = '';
 
-  showToast = false;
-  toastMessage = '';
-  toastType: 'success' | 'error' = 'success';
 
   page = 1;
   pageSize = 12;
@@ -78,7 +80,7 @@ export class AuditLogs implements OnInit, OnDestroy {
         error: (err) => {
           console.error('Audit logs error:', err);
           this.logs = [];
-          this.errorMessage = this.getErrorMessage(err, 'Failed to load audit logs.');
+          this.errorMessage = this.notify.getErrorMessage(err, 'Failed to load audit logs.');
         }
       });
   }
@@ -174,12 +176,12 @@ export class AuditLogs implements OnInit, OnDestroy {
       )
       .subscribe({
         next: () => {
-          this.showToastMessage('Audit logs cleared successfully', 'success');
+          this.notify.success('Audit logs cleared successfully');
           this.loadLogs();
         },
         error: (err) => {
           console.error('Clear audit logs error:', err);
-          this.showToastMessage(this.getErrorMessage(err, 'Failed to clear audit logs.'), 'error');
+          this.notify.apiError(err, 'Failed to clear audit logs.');
         }
       });
   }
@@ -209,7 +211,7 @@ export class AuditLogs implements OnInit, OnDestroy {
 
     URL.revokeObjectURL(url);
 
-    this.showToastMessage('CSV exported successfully', 'success');
+    this.notify.success('CSV exported successfully');
   }
 
   goToPage(page: number): void {
@@ -219,30 +221,5 @@ export class AuditLogs implements OnInit, OnDestroy {
 
   getActionClass(action: string): string {
     return (action || '').toLowerCase();
-  }
-
-  showToastMessage(message: string, type: 'success' | 'error' = 'success'): void {
-    this.toastMessage = message;
-    this.toastType = type;
-    this.showToast = true;
-
-    setTimeout(() => {
-      this.showToast = false;
-      this.cdr.detectChanges();
-    }, 2500);
-  }
-
-  private getErrorMessage(err: any, fallback: string): string {
-    if (typeof err?.error === 'string') return err.error;
-    if (err?.error?.message) return err.error.message;
-
-    if (err?.error?.errors) {
-      const errors = err.error.errors;
-      return Object.keys(errors)
-        .map(key => errors[key].join(', '))
-        .join(' | ');
-    }
-
-    return fallback;
   }
 }

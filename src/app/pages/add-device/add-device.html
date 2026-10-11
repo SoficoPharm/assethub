@@ -373,42 +373,15 @@
         <div class="form-group">
           <label>Initial Status</label>
 
-          <div class="select-add-row">
-            <select
-              [name]="'initialStatus' + i"
-              [(ngModel)]="device.initialStatus"
-              [disabled]="loading"
-            >
-              @for (item of statusOptions; track item) {
-                <option [value]="item">{{ item }}</option>
-              }
-            </select>
-
-            <button
-              type="button"
-              class="add-mini-btn"
-              [disabled]="loading"
-              (click)="toggleAddBox('status')"
-            >
-              + Add
-            </button>
-          </div>
-
-          @if (showAddStatus) {
-            <div class="inline-add-box">
-              <input
-                type="text"
-                name="newStatus"
-                [(ngModel)]="newStatus"
-                placeholder="e.g. Maintenance"
-              />
-
-              <div class="inline-add-actions">
-                <button type="button" class="save-mini-btn" (click)="addStatus()">Add</button>
-                <button type="button" class="cancel-mini-btn" (click)="closeAllAddBoxes()">Cancel</button>
-              </div>
-            </div>
-          }
+          <select
+            [name]="'initialStatus' + i"
+            [(ngModel)]="device.initialStatus"
+            [disabled]="loading"
+          >
+            @for (item of statusOptions; track item) {
+              <option [value]="item">{{ item }}</option>
+            }
+          </select>
 
           <div class="hint-text">Save as Available, then assign it later.</div>
         </div>
@@ -465,9 +438,3 @@
     }
   </button>
 </div>
-
-@if (showToast) {
-  <div class="success-toast" [class.error-toast]="toastType === 'error'">
-    {{ toastMessage }}
-  </div>
-}

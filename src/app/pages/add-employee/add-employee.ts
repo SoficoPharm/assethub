@@ -1,9 +1,11 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { NotificationService } from '../../core/notification.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { EmployeesService } from '../../services/employees.service';
+import { DepartmentsService } from '../../services/departments.service';
 
 @Component({
   selector: 'app-add-employee',
@@ -13,32 +15,28 @@ import { EmployeesService } from '../../services/employees.service';
   styleUrls: ['./add-employee.scss']
 })
 export class AddEmployee implements OnInit {
+  private readonly notify = inject(NotificationService);
+  private readonly departmentsService = inject(DepartmentsService);
+
   fullName = '';
   email = '';
   employeeId = '';
   department = '';
   jobTitle = '';
   userDomain = '';
-  role = 'Viewer';
-saving = false;
+
   imageFile: File | null = null;
   imagePreview = '';
   imageName = '';
   imageSize = '';
 
   departments: string[] = [];
-  roles: string[] = [];
 
   showAddDepartment = false;
-  showAddRole = false;
-
-  loading = false;
-  showToast = false;
-  toastMessage = '';
-  toastType: 'success' | 'error' = 'success';
-
   newDepartment = '';
-  newRole = '';
+  addingDepartment = false;
+
+  saving = false;
 
   constructor(
     private readonly router: Router,
@@ -47,46 +45,52 @@ saving = false;
   ) {}
 
   ngOnInit(): void {
-    this.loadOptions();
+    this.loadDepartments();
   }
 
-  loadOptions(): void {
-    this.departments = ['Engineering', 'Design', 'Finance', 'HR', 'Sales', 'Operations', 'Management'];
-    this.roles = ['Admin', 'IT Support', 'Manager', 'Viewer'];
+  loadDepartments(): void {
+    this.departmentsService.getDepartments().subscribe({
+      next: data => {
+        this.departments = (data ?? []).map(d => d.departmentName);
+        this.cdr.detectChanges();
+      },
+      error: err => this.notify.apiError(err, 'Failed to load departments.')
+    });
   }
 
-saveEmployee(): void {
-  if (!this.fullName.trim() || !this.email.trim() || !this.role.trim()) {
-    this.showAppToast('Please enter full name, email, and system role.', 'error');
-    return;
-  }
+  saveEmployee(): void {
+    if (this.saving) return;
 
-  this.saving = true;
-
-  this.employeesService.createEmployee({
-    fullName: this.fullName.trim(),
-    email: this.email.trim(),
-    employeeId: this.employeeId.trim(),
-    department: this.department || '',
-    jobTitle: this.jobTitle || '',
-    role: this.role,
-    userDomain: this.userDomain.trim(),
-    images: this.imageFile ? 1 : 0,
-    imageUrl: '',
-    imageFile: this.imageFile
-  }).subscribe({
-    next: () => {
-      setTimeout(() => {
-        this.router.navigate(['/employees']);
-      }, 600); // يخلي loader يبان شوية
-    },
-    error: err => {
-      console.error(err);
-      this.saving = false;
-      this.showAppToast('Failed to save employee.', 'error');
+    if (!this.fullName.trim() || !this.email.trim()) {
+      this.notify.error('Please enter full name and email.');
+      return;
     }
-  });
-}
+
+    this.saving = true;
+
+    this.employeesService.createEmployee({
+      fullName: this.fullName.trim(),
+      email: this.email.trim(),
+      employeeId: this.employeeId.trim(),
+      department: this.department || '',
+      jobTitle: this.jobTitle || '',
+      userDomain: this.userDomain.trim(),
+      images: this.imageFile ? 1 : 0,
+      imageUrl: '',
+      imageFile: this.imageFile
+    }).subscribe({
+      next: () => {
+        this.notify.success('Employee created successfully');
+        this.router.navigate(['/employees']);
+      },
+      error: err => {
+        console.error(err);
+        this.saving = false;
+        this.notify.apiError(err, 'Failed to save employee.');
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   cancel(): void {
     this.router.navigate(['/employees']);
@@ -103,7 +107,7 @@ saveEmployee(): void {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      this.showAppToast('Please select a valid image file.', 'error');
+      this.notify.error('Please select a valid image file.');
       input.value = '';
       return;
     }
@@ -130,70 +134,36 @@ saveEmployee(): void {
     this.imageSize = '';
   }
 
-  toggleAddBox(type: 'department' | 'role'): void {
-    this.showAddDepartment = false;
-    this.showAddRole = false;
-
-    if (type === 'department') this.showAddDepartment = true;
-    if (type === 'role') this.showAddRole = true;
+  toggleAddDepartment(): void {
+    this.showAddDepartment = !this.showAddDepartment;
   }
 
   closeAllAddBoxes(): void {
     this.showAddDepartment = false;
-    this.showAddRole = false;
   }
 
+  /** Creates the department through the API so it appears on the Departments page too. */
   addDepartment(): void {
     const value = this.newDepartment.trim();
-    if (!value) return;
+    if (!value || this.addingDepartment) return;
 
-    if (!this.departments.includes(value)) {
-      this.departments.push(value);
-    }
+    this.addingDepartment = true;
 
-    this.department = value;
-    this.newDepartment = '';
-    this.showAddDepartment = false;
-    this.showAppToast('Department option added', 'success');
-  }
-
-  addRole(): void {
-    const value = this.newRole.trim();
-    if (!value) return;
-
-    if (!this.roles.includes(value)) {
-      this.roles.push(value);
-    }
-
-    this.role = value;
-    this.newRole = '';
-    this.showAddRole = false;
-    this.showAppToast('Role option added', 'success');
-  }
-
-  showAppToast(message: string, type: 'success' | 'error' = 'success'): void {
-    this.toastMessage = message;
-    this.toastType = type;
-    this.showToast = true;
-
-    setTimeout(() => {
-      this.showToast = false;
-      this.cdr.detectChanges();
-    }, 2500);
-  }
-
-  private getErrorMessage(err: any, fallback: string): string {
-    if (typeof err?.error === 'string') return err.error;
-    if (err?.error?.message) return err.error.message;
-
-    if (err?.error?.errors) {
-      const errors = err.error.errors;
-      return Object.keys(errors)
-        .map(key => errors[key].join(', '))
-        .join(' | ');
-    }
-
-    return fallback;
+    this.departmentsService.createDepartment({ departmentName: value, managerName: '', membersCount: 0 })
+      .pipe(finalize(() => {
+        this.addingDepartment = false;
+        this.cdr.detectChanges();
+      }))
+      .subscribe({
+        next: created => {
+          this.departments = [...this.departments, created.departmentName].sort();
+          this.department = created.departmentName;
+          this.newDepartment = '';
+          this.showAddDepartment = false;
+          this.notify.success('Department added');
+        },
+        error: err => this.notify.apiError(err, 'Failed to add department.')
+      });
   }
 
   private formatFileSize(bytes: number): string {

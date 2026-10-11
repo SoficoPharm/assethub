@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-unauthorized',
@@ -9,13 +10,17 @@ import { Router } from '@angular/router';
   styleUrls: ['./unauthorized.scss']
 })
 export class Unauthorized {
-  constructor(private readonly router: Router) {}
+  constructor(
+    private readonly router: Router,
+    private readonly auth: AuthService
+  ) {}
 
   goBack(): void {
     history.back();
   }
 
   signOut(): void {
+    this.auth.logout();
     this.router.navigate(['/login']);
   }
 }

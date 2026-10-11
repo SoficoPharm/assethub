@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { NotificationService } from '../../core/notification.service';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -17,11 +18,17 @@ import {
   styleUrls: ['./profile.scss']
 })
 export class Profile implements OnInit {
+  private readonly notify = inject(NotificationService);
 
   profile: ProfileDto | null = null;
 
   loading = false;
   errorMessage = '';
+
+  currentPassword = '';
+  newPassword = '';
+  confirmPassword = '';
+  changingPassword = false;
 
   constructor(
     private readonly profileService: ProfileService,
@@ -66,6 +73,45 @@ export class Profile implements OnInit {
 
           this.cdr.detectChanges();
         }
+      });
+  }
+
+  changePassword(): void {
+    if (this.changingPassword) return;
+
+    if (!this.currentPassword || !this.newPassword) {
+      this.notify.error('Please enter your current and new password.');
+      return;
+    }
+
+    if (this.newPassword.length < 8) {
+      this.notify.error('New password must be at least 8 characters.');
+      return;
+    }
+
+    if (this.newPassword !== this.confirmPassword) {
+      this.notify.error('New passwords do not match.');
+      return;
+    }
+
+    this.changingPassword = true;
+
+    this.profileService.changePassword({
+      currentPassword: this.currentPassword,
+      newPassword: this.newPassword
+    })
+      .pipe(finalize(() => {
+        this.changingPassword = false;
+        this.cdr.detectChanges();
+      }))
+      .subscribe({
+        next: () => {
+          this.currentPassword = '';
+          this.newPassword = '';
+          this.confirmPassword = '';
+          this.notify.success('Password changed successfully');
+        },
+        error: err => this.notify.apiError(err, 'Failed to change password.')
       });
   }
 

@@ -1,9 +1,11 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { NotificationService } from '../../core/notification.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs';
 import { EmployeesService } from '../../services/employees.service';
+import { DepartmentsService } from '../../services/departments.service';
 
 @Component({
   selector: 'app-edit-employee',
@@ -13,6 +15,9 @@ import { EmployeesService } from '../../services/employees.service';
   styleUrls: ['./edit-employee.scss']
 })
 export class EditEmployee implements OnInit {
+  private readonly notify = inject(NotificationService);
+  private readonly departmentsService = inject(DepartmentsService);
+
   userId = 0;
   originalEmployeeId = '';
 
@@ -22,7 +27,6 @@ export class EditEmployee implements OnInit {
   userDomain = '';
   department = '';
   jobTitle = '';
-  role = 'Viewer';
 
   imageFile: File | null = null;
   imagePreview = '';
@@ -30,22 +34,15 @@ export class EditEmployee implements OnInit {
   imageSize = '';
   imageUrl = '';
 
-  departments = ['Engineering', 'Design', 'Finance', 'HR', 'Sales', 'Operations', 'Management'];
-  roles = ['Admin', 'IT Support', 'Manager', 'Viewer'];
+  departments: string[] = [];
 
   loading = false;
   saving = false;
   deleting = false;
 
   showAddDepartment = false;
-  showAddRole = false;
-
-  showToast = false;
-  toastMessage = '';
-  toastType: 'success' | 'error' = 'success';
-
   newDepartment = '';
-  newRole = '';
+  addingDepartment = false;
 
   constructor(
     private readonly router: Router,
@@ -63,6 +60,7 @@ export class EditEmployee implements OnInit {
     }
 
     this.loadUser();
+    this.loadDepartments();
   }
 
   loadUser(): void {
@@ -82,22 +80,21 @@ export class EditEmployee implements OnInit {
           this.userDomain = user.userDomain || '';
           this.department = user.department || '';
           this.jobTitle = user.jobTitle || user.title || '';
-          this.role = user.role || 'Viewer';
           this.imageUrl = user.imageUrl || '';
           this.imagePreview = user.imageUrl || '';
 
-          this.ensureCurrentValuesExistInDropdowns();
+          this.ensureCurrentDepartmentInDropdown();
         },
         error: (err) => {
           console.error(err);
-          this.showAppToast(this.getErrorMessage(err, 'Failed to load employee.'), 'error');
+          this.notify.apiError(err, 'Failed to load employee.');
         }
       });
   }
 
   saveChanges(): void {
-    if (!this.fullName.trim() || !this.email.trim() || !this.role.trim()) {
-      this.showAppToast('Please enter full name, email, and system role.', 'error');
+    if (!this.fullName.trim() || !this.email.trim()) {
+      this.notify.error('Please enter full name and email.');
       return;
     }
 
@@ -110,7 +107,6 @@ export class EditEmployee implements OnInit {
       userDomain: this.userDomain.trim(),
       department: this.department || '',
       jobTitle: this.jobTitle || '',
-      role: this.role,
       images: this.imagePreview ? 1 : 0,
       imageUrl: this.imageFile ? '' : this.imageUrl,
       imageFile: this.imageFile
@@ -121,12 +117,12 @@ export class EditEmployee implements OnInit {
       }))
       .subscribe({
         next: () => {
-          this.showAppToast('Employee updated successfully', 'success');
+          this.notify.success('Employee updated successfully');
           setTimeout(() => this.router.navigate(['/employees']), 600);
         },
         error: (err) => {
           console.error(err);
-          this.showAppToast(this.getErrorMessage(err, 'Failed to update employee.'), 'error');
+          this.notify.apiError(err, 'Failed to update employee.');
         }
       });
   }
@@ -144,12 +140,12 @@ export class EditEmployee implements OnInit {
       }))
       .subscribe({
         next: () => {
-          this.showAppToast('Employee deleted successfully', 'success');
+          this.notify.success('Employee deleted successfully');
           setTimeout(() => this.router.navigate(['/employees']), 600);
         },
         error: (err) => {
           console.error(err);
-          this.showAppToast(this.getErrorMessage(err, 'Failed to delete employee.'), 'error');
+          this.notify.apiError(err, 'Failed to delete employee.');
         }
       });
   }
@@ -161,7 +157,7 @@ export class EditEmployee implements OnInit {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      this.showAppToast('Please select a valid image file.', 'error');
+      this.notify.error('Please select a valid image file.');
       input.value = '';
       return;
     }
@@ -198,80 +194,54 @@ export class EditEmployee implements OnInit {
     this.router.navigate(['/employees']);
   }
 
-  toggleAddBox(type: 'department' | 'role'): void {
-    this.showAddDepartment = false;
-    this.showAddRole = false;
-
-    if (type === 'department') this.showAddDepartment = true;
-    if (type === 'role') this.showAddRole = true;
+  toggleAddDepartment(): void {
+    this.showAddDepartment = !this.showAddDepartment;
   }
 
   closeAllAddBoxes(): void {
     this.showAddDepartment = false;
-    this.showAddRole = false;
   }
 
+  /** Creates the department through the API so it appears on the Departments page too. */
   addDepartment(): void {
     const value = this.newDepartment.trim();
-    if (!value) return;
+    if (!value || this.addingDepartment) return;
 
-    if (!this.departments.includes(value)) {
-      this.departments.push(value);
-    }
+    this.addingDepartment = true;
 
-    this.department = value;
-    this.newDepartment = '';
-    this.showAddDepartment = false;
-    this.showAppToast('Department option added', 'success');
+    this.departmentsService.createDepartment({ departmentName: value, managerName: '', membersCount: 0 })
+      .pipe(finalize(() => {
+        this.addingDepartment = false;
+        this.cdr.detectChanges();
+      }))
+      .subscribe({
+        next: created => {
+          this.departments = [...this.departments, created.departmentName].sort();
+          this.department = created.departmentName;
+          this.newDepartment = '';
+          this.showAddDepartment = false;
+          this.notify.success('Department added');
+        },
+        error: err => this.notify.apiError(err, 'Failed to add department.')
+      });
   }
 
-  addRole(): void {
-    const value = this.newRole.trim();
-    if (!value) return;
-
-    if (!this.roles.includes(value)) {
-      this.roles.push(value);
-    }
-
-    this.role = value;
-    this.newRole = '';
-    this.showAddRole = false;
-    this.showAppToast('Role option added', 'success');
+  loadDepartments(): void {
+    this.departmentsService.getDepartments().subscribe({
+      next: data => {
+        this.departments = (data ?? []).map(d => d.departmentName);
+        this.ensureCurrentDepartmentInDropdown();
+        this.cdr.detectChanges();
+      },
+      error: err => this.notify.apiError(err, 'Failed to load departments.')
+    });
   }
 
-  ensureCurrentValuesExistInDropdowns(): void {
+  /** Keeps a legacy department value selectable even if it is not in the Departments table. */
+  ensureCurrentDepartmentInDropdown(): void {
     if (this.department && !this.departments.includes(this.department)) {
-      this.departments.push(this.department);
+      this.departments = [...this.departments, this.department];
     }
-
-    if (this.role && !this.roles.includes(this.role)) {
-      this.roles.push(this.role);
-    }
-  }
-
-  showAppToast(message: string, type: 'success' | 'error' = 'success'): void {
-    this.toastMessage = message;
-    this.toastType = type;
-    this.showToast = true;
-
-    setTimeout(() => {
-      this.showToast = false;
-      this.cdr.detectChanges();
-    }, 2500);
-  }
-
-  private getErrorMessage(err: any, fallback: string): string {
-    if (typeof err?.error === 'string') return err.error;
-    if (err?.error?.message) return err.error.message;
-
-    if (err?.error?.errors) {
-      const errors = err.error.errors;
-      return Object.keys(errors)
-        .map(key => errors[key].join(', '))
-        .join(' | ');
-    }
-
-    return fallback;
   }
 
   private formatFileSize(bytes: number): string {

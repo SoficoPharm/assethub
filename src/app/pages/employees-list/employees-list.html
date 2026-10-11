@@ -18,7 +18,9 @@
     </div>
 
     <div class="toolbar-actions">
-      <a routerLink="/employees/add" class="primary-btn">+ Add Employee</a>
+      @if (auth.canEdit()) {
+        <a routerLink="/employees/add" class="primary-btn">+ Add Employee</a>
+      }
     </div>
   </div>
 
@@ -86,9 +88,11 @@
     </div>
 
     <div class="actions-cell">
-      <a [routerLink]="['/employees/edit', user.employeeId]" class="edit-link">
-        Edit
-      </a>
+      @if (auth.canEdit()) {
+        <a [routerLink]="['/employees/edit', user.employeeId]" class="edit-link">
+          Edit
+        </a>
+      }
     </div>
   </div>
 }

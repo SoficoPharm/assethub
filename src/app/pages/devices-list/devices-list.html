@@ -53,7 +53,9 @@
         Clear
       </button>
 
-      <a routerLink="/devices/add" class="primary-btn">+ Add Device</a>
+      @if (auth.canEdit()) {
+        <a routerLink="/devices/add" class="primary-btn">+ Add Device</a>
+      }
     </div>
   </div>
 
@@ -137,9 +139,11 @@
           </div>
 
           <div class="col-actions">
-            <a [routerLink]="['/devices/edit', device.code]" class="edit-link">
-              Edit
-            </a>
+            @if (auth.canEdit()) {
+              <a [routerLink]="['/devices/edit', device.code]" class="edit-link">
+                Edit
+              </a>
+            }
           </div>
         </div>
       }

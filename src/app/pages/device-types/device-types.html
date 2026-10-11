@@ -4,7 +4,7 @@
     <h1>Device Types</h1>
   </div>
 
-  <div class="types-grid">
+  <div class="types-grid" [class.read-only]="!auth.canEdit()">
     <div class="card">
       <h3>Configured Types</h3>
 
@@ -29,6 +29,7 @@
               <span>Devices</span>
             </div>
 
+            @if (auth.canEdit()) {
             <div class="actions">
               <button
                 type="button"
@@ -51,11 +52,13 @@
                 }
               </button>
             </div>
+            }
           </div>
         }
       </div>
     </div>
 
+    @if (auth.canEdit()) {
     <div class="card add-card">
       <h3>{{ editId !== null ? 'Edit Type' : 'Add Type' }}</h3>
 
@@ -124,11 +127,7 @@
         </button>
       }
     </div>
+    }
   </div>
 
-  @if (showToast) {
-    <div class="success-toast" [class.error-toast]="toastType === 'error'">
-      {{ toastMessage }}
-    </div>
-  }
 </section>

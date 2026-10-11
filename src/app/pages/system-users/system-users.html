@@ -1,0 +1,147 @@
+<section class="system-users-page">
+  <div class="page-header">
+    <div class="breadcrumb">Settings <span>›</span> System Users</div>
+    <h1>System Users</h1>
+  </div>
+
+  <div class="page-grid">
+    <div class="card">
+      <h3>Accounts that can sign in</h3>
+
+      <div class="user-list">
+        @if (isLoading) {
+          <div class="empty-state">Loading system users...</div>
+        }
+
+        @if (!isLoading && users.length === 0) {
+          <div class="empty-state">No system users found.</div>
+        }
+
+        @for (user of users; track user.id) {
+          <div class="user-row" [class.inactive-row]="!user.isActive" [class.selected]="selected?.id === user.id">
+            <div class="user-info">
+              <div class="user-name">
+                {{ user.fullName }}
+                @if (isSelf(user)) {
+                  <span class="you-tag">You</span>
+                }
+              </div>
+              <div class="user-meta">
+                {{ user.userName }}
+                @if (user.email) {
+                  <span> • {{ user.email }}</span>
+                }
+                @if (user.department) {
+                  <span> • {{ user.department }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="badges">
+              <span class="role-badge" [ngClass]="roleClass(user.role)">{{ user.role }}</span>
+              <span class="status-badge" [class.active]="user.isActive" [class.inactive]="!user.isActive">
+                {{ user.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+
+            <div class="row-actions">
+              <button type="button" class="text-btn" [disabled]="isSaving" (click)="startEdit(user)">Edit</button>
+              <button type="button" class="text-btn" [disabled]="isSaving" (click)="startReset(user)">Reset password</button>
+
+              @if (!isSelf(user)) {
+                <button
+                  type="button"
+                  class="text-btn"
+                  [disabled]="busyId !== null"
+                  (click)="toggleActive(user)"
+                >
+                  {{ user.isActive ? 'Deactivate' : 'Activate' }}
+                </button>
+
+                <button
+                  type="button"
+                  class="text-btn danger"
+                  [disabled]="busyId !== null"
+                  (click)="deleteUser(user)"
+                >
+                  Delete
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="card form-card">
+      <h3>{{ formTitle }}</h3>
+
+      <form (ngSubmit)="submit()" autocomplete="off">
+        @if (mode !== 'reset') {
+          <div class="form-group">
+            <label for="su-fullName">Full Name <span>*</span></label>
+            <input id="su-fullName" type="text" name="fullName" [(ngModel)]="fullName" [disabled]="isSaving" placeholder="e.g. Jane Doe" />
+          </div>
+
+          <div class="form-group">
+            <label for="su-userName">User Name <span>*</span></label>
+            <input id="su-userName" type="text" name="userName" [(ngModel)]="userName" [disabled]="isSaving" placeholder="Used to sign in" />
+          </div>
+
+          <div class="form-group">
+            <label for="su-email">Email</label>
+            <input id="su-email" type="email" name="email" [(ngModel)]="email" [disabled]="isSaving" />
+          </div>
+
+          <div class="form-group">
+            <label for="su-department">Department</label>
+            <input id="su-department" type="text" name="department" [(ngModel)]="department" [disabled]="isSaving" />
+          </div>
+
+          <div class="form-group">
+            <label for="su-role">Role <span>*</span></label>
+            <select id="su-role" name="role" [(ngModel)]="role" [disabled]="isSaving || roleLocked">
+              @for (item of roles; track item) {
+                <option [value]="item">{{ item }}</option>
+              }
+            </select>
+            @if (roleLocked) {
+              <div class="hint-text">You cannot remove your own SuperAdmin role.</div>
+            }
+          </div>
+        }
+
+        @if (mode !== 'edit') {
+          <div class="form-group">
+            <label for="su-password">{{ mode === 'reset' ? 'New Password' : 'Password' }} <span>*</span></label>
+            <input id="su-password" type="password" name="password" autocomplete="new-password" [(ngModel)]="password" [disabled]="isSaving" />
+          </div>
+
+          <div class="form-group">
+            <label for="su-confirm">Confirm Password <span>*</span></label>
+            <input id="su-confirm" type="password" name="confirmPassword" autocomplete="new-password" [(ngModel)]="confirmPassword" [disabled]="isSaving" />
+            <div class="hint-text">At least 8 characters.</div>
+          </div>
+        }
+
+        <button class="primary-btn" type="submit" [disabled]="isSaving">
+          @if (isSaving) {
+            Saving...
+          } @else if (mode === 'edit') {
+            Save Changes
+          } @else if (mode === 'reset') {
+            Reset Password
+          } @else {
+            Create User
+          }
+        </button>
+
+        @if (mode !== 'create') {
+          <button class="secondary-btn" type="button" [disabled]="isSaving" (click)="resetForm()">
+            Cancel
+          </button>
+        }
+      </form>
+    </div>
+  </div>
+</section>

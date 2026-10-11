@@ -27,7 +27,7 @@ export class Login {
   signIn(): void {
     this.errorMessage = '';
 
-    if (!this.email.trim() || !this.password.trim()) {
+    if (!this.email.trim() || !this.password) {
       this.errorMessage = 'Please enter username and password';
       return;
     }
@@ -36,13 +36,9 @@ export class Login {
 
     this.auth.login({
       userName: this.email.trim(),
-      password: this.password.trim()
+      password: this.password
     }).subscribe({
-      next: (res: any) => {
-        this.auth.saveToken(res.token);
-
-        localStorage.setItem('currentUser', JSON.stringify(res.user));
-
+      next: () => {
         this.loading = false;
         this.router.navigate(['/dashboard']);
       },
@@ -50,7 +46,7 @@ export class Login {
         this.loading = false;
 
         if (err.status === 401) {
-          this.errorMessage = 'Invalid username or password';
+          this.errorMessage = err.error?.message || 'Invalid username or password';
         } else {
           this.errorMessage = 'Server error, try again';
         }

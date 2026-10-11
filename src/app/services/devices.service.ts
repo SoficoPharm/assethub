@@ -1,7 +1,14 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
+
+export type DeviceStatus = 'Available' | 'Assigned' | 'Maintenance' | 'Inactive' | 'Lost';
+
+export const DEVICE_STATUSES: DeviceStatus[] = ['Available', 'Assigned', 'Maintenance', 'Inactive', 'Lost'];
+
+/** Statuses that can be set by editing a device. Assigned is only set through Assignments. */
+export const EDITABLE_DEVICE_STATUSES: DeviceStatus[] = ['Available', 'Maintenance', 'Inactive', 'Lost'];
 
 export interface DeviceRow {
   id: number;
@@ -25,7 +32,7 @@ export interface DeviceRow {
   printer?: boolean;
   scanner?: boolean;
 
-  status: 'Active' | 'Available' | 'Inactive' | 'Lost' | 'Maintenance' | 'Assigned';
+  status: DeviceStatus;
   notes: string;
   internalNotes?: string;
   assignedUser: string;
@@ -68,14 +75,6 @@ export class DevicesService {
 
   constructor(private readonly http: HttpClient) {}
 
-  private headers(): HttpHeaders {
-    const token = localStorage.getItem('token');
-
-    return token
-      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
-      : new HttpHeaders();
-  }
-
   private toFormData(data: CreateDeviceRequest): FormData {
     const formData = new FormData();
 
@@ -112,48 +111,34 @@ export class DevicesService {
   }
 
   getDevices(): Observable<DeviceRow[]> {
-    return this.http.get<DeviceRow[]>(`${this.api}/Devices`, {
-      headers: this.headers()
-    });
+    return this.http.get<DeviceRow[]>(`${this.api}/Devices`);
   }
 
   getAvailableDevices(): Observable<DeviceRow[]> {
-    return this.http.get<DeviceRow[]>(`${this.api}/Devices/available`, {
-      headers: this.headers()
-    });
+    return this.http.get<DeviceRow[]>(`${this.api}/Devices/available`);
   }
 
   getDeviceByCode(code: string): Observable<DeviceRow> {
-    return this.http.get<DeviceRow>(`${this.api}/Devices/by-code/${code}`, {
-      headers: this.headers()
-    });
+    return this.http.get<DeviceRow>(`${this.api}/Devices/by-code/${code}`);
   }
 
   createDevice(data: CreateDeviceRequest): Observable<unknown> {
-    return this.http.post(`${this.api}/Devices`, this.toFormData(data), {
-      headers: this.headers()
-    });
+    return this.http.post(`${this.api}/Devices`, this.toFormData(data));
   }
 
   updateDeviceByCode(code: string, data: CreateDeviceRequest): Observable<unknown> {
-    return this.http.put(`${this.api}/Devices/by-code/${code}`, this.toFormData(data), {
-      headers: this.headers()
-    });
+    return this.http.put(`${this.api}/Devices/by-code/${code}`, this.toFormData(data));
   }
 
   deleteDeviceByCode(code: string): Observable<unknown> {
-    return this.http.delete(`${this.api}/Devices/by-code/${code}`, {
-      headers: this.headers()
-    });
+    return this.http.delete(`${this.api}/Devices/by-code/${code}`);
   }
 
   updateDeviceStatus(id: number, status: string): Observable<unknown> {
     return this.http.put(
       `${this.api}/Devices/${id}/status`,
       JSON.stringify(status),
-      {
-        headers: this.headers().set('Content-Type', 'application/json')
-      }
+      { headers: { 'Content-Type': 'application/json' } }
     );
   }
 }

@@ -99,10 +99,6 @@
   animation: spin 0.7s linear infinite;
 }
 
-.error-toast {
-  background: #dc2626 !important;
-}
-
 .upload-box.disabled,
 button:disabled,
 input:disabled,
@@ -459,20 +455,6 @@ select:disabled {
   font-weight: 700;
   cursor: pointer;
 }
-.success-toast {
-  position: fixed;
-  right: 24px;
-  top: 90px;
-  z-index: 9999;
-  background: #35b77c;
-  color: #fff;
-  padding: 13px 18px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 700;
-  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.18);
-}
-
 .empty-state {
   padding: 28px;
   text-align: center;
