@@ -6,7 +6,6 @@ import { environment } from '../../environments/environment';
 export interface AuditLog {
   id: number;
   timestamp: string;
-  timestampText?: string;
   actor: string;
   logAction: string;
   target: string;

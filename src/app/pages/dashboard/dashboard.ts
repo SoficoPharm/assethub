@@ -1,6 +1,7 @@
 import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs';
+import { AppDatePipe } from '../../core/app-date';
 import {
   ActivityItem,
   ChartItem,
@@ -12,7 +13,7 @@ import {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AppDatePipe],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss']
 })

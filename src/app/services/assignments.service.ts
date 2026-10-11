@@ -10,10 +10,10 @@ export interface AssignmentRow {
   initials: string;
   device: string;
   model: string;
+  /** ISO 8601 UTC */
   assignedDate: string;
-  returnedDate: string;
-  assignedDateRaw?: string;
-  returnedDateRaw?: string | null;
+  /** ISO 8601 UTC, null while the assignment is active */
+  returnedDate: string | null;
   status: 'Active' | 'Returned';
 }
 

@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { NotificationService } from '../../core/notification.service';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { formatAppDate } from '../../core/app-date';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
@@ -13,7 +14,6 @@ import {
   selector: 'app-profile',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  providers: [DatePipe],
   templateUrl: './profile.html',
   styleUrls: ['./profile.scss']
 })
@@ -32,7 +32,6 @@ export class Profile implements OnInit {
 
   constructor(
     private readonly profileService: ProfileService,
-    private readonly datePipe: DatePipe,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -140,13 +139,7 @@ export class Profile implements OnInit {
   }
 
   get joinedDate(): string {
-
-    return this.profile?.createdAt
-      ? this.datePipe.transform(
-          this.profile.createdAt,
-          'MMM d, y'
-        ) || 'N/A'
-      : 'N/A';
+    return formatAppDate(this.profile?.createdAt, 'date', 'N/A');
   }
 
   get initials(): string {

@@ -19,7 +19,8 @@ export interface ChartItem {
 export interface ActivityItem {
   title: string;
   user: string;
-  time: string;
+  /** ISO 8601 UTC */
+  timestamp: string;
   color: string;
 }
 

@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { NotificationService } from '../../core/notification.service';
+import { AppDatePipe, appYear } from '../../core/app-date';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +10,7 @@ import { AssignmentRow, AssignmentsService } from '../../services/assignments.se
 @Component({
   selector: 'app-assignment-history',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AppDatePipe],
   templateUrl: './assignment-history.html',
   styleUrls: ['./assignment-history.scss']
 })
@@ -83,7 +84,7 @@ export class AssignmentHistory implements OnInit {
       const matchesStatus =
         this.selectedStatus === 'All' || status === this.selectedStatus;
 
-      const matchesDateRange = this.matchesDateRange(row.assignedDateRaw || row.assignedDate);
+      const matchesDateRange = this.matchesDateRange(row.assignedDate);
 
       return matchesSearch && matchesStatus && matchesDateRange;
     });
@@ -141,7 +142,7 @@ export class AssignmentHistory implements OnInit {
     }
 
     if (this.selectedDateRange === 'This Year') {
-      return assignedDate.getFullYear() === today.getFullYear();
+      return appYear(assignedDate) === appYear(today);
     }
 
     return true;

@@ -141,7 +141,7 @@
             <div class="activity-content">
               <div class="activity-title">{{ item.title }}</div>
               <div class="activity-meta">
-                {{ item.user }} <span>•</span> {{ item.time }}
+                {{ item.user }} <span>•</span> {{ item.timestamp | appDate: 'datetime' }}
               </div>
             </div>
           </div>

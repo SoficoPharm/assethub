@@ -1,7 +1,8 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../core/notification.service';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { formatAppDate } from '../../core/app-date';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { AuditLog, AuditLogsService } from '../../services/audit-logs.service';
@@ -20,7 +21,6 @@ interface AuditRow {
   selector: 'app-audit-logs',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  providers: [DatePipe],
   templateUrl: './audit-logs.html',
   styleUrls: ['./audit-logs.scss']
 })
@@ -46,7 +46,6 @@ export class AuditLogs implements OnInit, OnDestroy {
 
   constructor(
     private readonly auditLogsService: AuditLogsService,
-    private readonly datePipe: DatePipe,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -110,11 +109,7 @@ export class AuditLogs implements OnInit, OnDestroy {
   mapLog(log: AuditLog): AuditRow {
     return {
       id: log.id,
-      timestamp:
-        log.timestampText ||
-        this.datePipe.transform(log.timestamp, 'MMM d, y HH:mm:ss') ||
-        log.timestamp ||
-        '',
+      timestamp: formatAppDate(log.timestamp, 'datetime'),
       actor: log.actor || 'Unknown',
       actorInitials: this.getInitials(log.actor || 'Unknown'),
       action: log.logAction || 'Update',

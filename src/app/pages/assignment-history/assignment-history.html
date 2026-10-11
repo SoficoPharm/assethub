@@ -88,8 +88,8 @@
             <div class="secondary">{{ row.model }}</div>
           </div>
 
-          <div>{{ row.assignedDate }}</div>
-          <div class="returned">{{ row.returnedDate }}</div>
+          <div>{{ row.assignedDate | appDate }}</div>
+          <div class="returned">{{ row.returnedDate | appDate }}</div>
 
           <div>
             <span class="status-badge" [ngClass]="getStatusClass(row.status)">
