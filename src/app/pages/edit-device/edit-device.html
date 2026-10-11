@@ -73,7 +73,20 @@
 
           <div class="form-group">
             <label>Serial Number</label>
-            <input type="text" name="serialNumber" [(ngModel)]="serialNumber" />
+            <input
+              type="text"
+              name="serialNumber"
+              [(ngModel)]="serialNumber"
+              (ngModelChange)="onSerialInput()"
+              (blur)="checkSerial()"
+              [class.invalid]="serialError"
+            />
+            @if (checkingSerial) {
+              <div class="field-hint">Checking serial number...</div>
+            }
+            @if (serialError) {
+              <div class="field-error" role="alert">{{ serialError }}</div>
+            }
           </div>
         </div>
 
@@ -271,7 +284,7 @@
 
         <div class="right-actions">
           <button type="button" class="secondary-btn" [disabled]="saving" (click)="cancel()">Cancel</button>
-<button type="button" class="primary-btn" [disabled]="saving" (click)="saveChanges()">
+<button type="button" class="primary-btn" [disabled]="saving || !!serialError || checkingSerial" (click)="saveChanges()">
   @if (saving) {
     <span class="btn-loader"></span>
     <span>Saving...</span>

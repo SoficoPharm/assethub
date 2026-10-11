@@ -4,7 +4,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs';
-import { DeviceStatus, DevicesService, EDITABLE_DEVICE_STATUSES } from '../../services/devices.service';
+import {
+  DeviceStatus,
+  DevicesService,
+  EDITABLE_DEVICE_STATUSES,
+  normalizeSerial,
+  serialInUseMessage
+} from '../../services/devices.service';
 
 @Component({
   selector: 'app-edit-device',
@@ -48,6 +54,10 @@ export class EditDevice implements OnInit {
   loading = false;
   saving = false;
 
+  /** Serial already used by another device (from check-serial). Blocks Save while set. */
+  serialError = '';
+  checkingSerial = false;
+
   deviceTypes = ['Laptop', 'Mobile', 'Tablet', 'Desktop', 'Bag', 'SIM Line'];
   brands = ['Apple', 'Samsung', 'Lenovo', 'Dell', 'HP', 'Vodafone', 'Orange', 'Etisalat'];
   ramOptions = ['N/A', '4 GB', '8 GB', '16 GB', '32 GB'];
@@ -75,6 +85,42 @@ export class EditDevice implements OnInit {
     return this.originalStatus === 'Assigned'
       ? ['Assigned', ...EDITABLE_DEVICE_STATUSES]
       : EDITABLE_DEVICE_STATUSES;
+  }
+
+  onSerialInput(): void {
+    this.serialError = '';
+  }
+
+  /** On blur: is this serial used by another device? */
+  checkSerial(): void {
+    const serial = normalizeSerial(this.serialNumber);
+    this.serialError = '';
+
+    if (!serial) {
+      this.checkingSerial = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.checkingSerial = true;
+    this.cdr.detectChanges();
+
+    this.devicesService.checkSerial(serial, this.deviceCode).subscribe({
+      next: result => {
+        // Ignore a late answer for a value the user has already changed.
+        if (normalizeSerial(this.serialNumber) !== serial) return;
+
+        this.checkingSerial = false;
+        this.serialError = result.exists ? serialInUseMessage(result) : '';
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        // Not blocking: the server checks again on save.
+        this.checkingSerial = false;
+        this.notify.apiError(err, 'Could not check the serial number.');
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   get willReturnDevice(): boolean {
@@ -172,6 +218,11 @@ export class EditDevice implements OnInit {
       return;
     }
 
+    if (this.serialError || this.checkingSerial) {
+      this.notify.error(this.serialError || 'Still checking the serial number.');
+      return;
+    }
+
     if (this.willReturnDevice) {
       const confirmed = confirm(
         `This device is assigned to ${this.assignedUser || 'an employee'}. ` +
@@ -185,7 +236,7 @@ export class EditDevice implements OnInit {
     this.devicesService.updateDeviceByCode(this.deviceCode, {
       deviceName: this.deviceName.trim(),
       imeiSerial: this.imeiSerial.trim(),
-      serialNumber: this.serialNumber.trim(),
+      serialNumber: normalizeSerial(this.serialNumber),
       deviceType: this.deviceType || 'N/A',
       platform: this.platform || this.deviceType || 'N/A',
       brand: this.brand || '',
@@ -217,6 +268,7 @@ export class EditDevice implements OnInit {
         error: (err) => {
           console.error('Update device error:', err);
           this.notify.apiError(err, 'Failed to update device.');
+          if (err?.status === 409) this.checkSerial();
         }
       });
   }

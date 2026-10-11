@@ -15,7 +15,10 @@
 </div>
 
 @for (device of devicesToAdd; track $index; let i = $index) {
-  <div class="form-card device-card">
+  <div class="form-card device-card" [class.has-error]="device.saveError">
+  @if (device.saveError) {
+    <div class="save-error" role="alert">Not saved: {{ device.saveError }}</div>
+  }
   <div class="device-card-header">
   <div>
     <div class="device-card-title">Device #{{ i + 1 }}</div>
@@ -90,9 +93,21 @@
             type="text"
             [name]="'serialNumber' + i"
             [(ngModel)]="device.serialNumber"
+            (ngModelChange)="onSerialInput(device)"
+            (blur)="checkSerial(i)"
+            [class.invalid]="device.serialError || device.batchError"
             [disabled]="loading"
             placeholder="Enter Serial Number"
           />
+          @if (device.checkingSerial) {
+            <div class="field-hint">Checking serial number...</div>
+          }
+          @if (device.serialError) {
+            <div class="field-error" role="alert">{{ device.serialError }}</div>
+          }
+          @if (device.batchError) {
+            <div class="field-error" role="alert">{{ device.batchError }}</div>
+          }
         </div>
 
         <div class="form-group">
@@ -427,7 +442,7 @@
   <button
     type="button"
     class="primary-btn"
-    [disabled]="loading"
+    [disabled]="loading || hasSerialProblems"
     (click)="saveDevices()"
   >
     @if (loading) {

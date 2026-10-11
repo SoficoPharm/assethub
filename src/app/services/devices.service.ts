@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
@@ -9,6 +9,22 @@ export const DEVICE_STATUSES: DeviceStatus[] = ['Available', 'Assigned', 'Mainte
 
 /** Statuses that can be set by editing a device. Assigned is only set through Assignments. */
 export const EDITABLE_DEVICE_STATUSES: DeviceStatus[] = ['Available', 'Maintenance', 'Inactive', 'Lost'];
+
+export interface SerialCheckResult {
+  exists: boolean;
+  deviceCode: string | null;
+  deviceName: string | null;
+}
+
+/** Same rule as the API: trim, upper-case, empty means "no serial". */
+export function normalizeSerial(serial: string | null | undefined): string {
+  return (serial ?? '').trim().toUpperCase();
+}
+
+/** Inline error text for a serial already used by another device. */
+export function serialInUseMessage(result: SerialCheckResult): string {
+  return `Already used by ${result.deviceCode} - ${result.deviceName}`;
+}
 
 export interface DeviceRow {
   id: number;
@@ -116,6 +132,13 @@ export class DevicesService {
 
   getAvailableDevices(): Observable<DeviceRow[]> {
     return this.http.get<DeviceRow[]>(`${this.api}/Devices/available`);
+  }
+
+  checkSerial(serial: string, excludeCode?: string): Observable<SerialCheckResult> {
+    let params = new HttpParams().set('serial', serial);
+    if (excludeCode) params = params.set('excludeCode', excludeCode);
+
+    return this.http.get<SerialCheckResult>(`${this.api}/Devices/check-serial`, { params });
   }
 
   getDeviceByCode(code: string): Observable<DeviceRow> {

@@ -3,8 +3,15 @@ import { NotificationService } from '../../core/notification.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
-import { DeviceStatus, DevicesService, EDITABLE_DEVICE_STATUSES } from '../../services/devices.service';
+import { catchError, concatMap, from, map, of, toArray } from 'rxjs';
+import {
+  CreateDeviceRequest,
+  DeviceStatus,
+  DevicesService,
+  EDITABLE_DEVICE_STATUSES,
+  normalizeSerial,
+  serialInUseMessage
+} from '../../services/devices.service';
 
 interface DeviceForm {
   deviceName: string;
@@ -27,6 +34,14 @@ interface DeviceForm {
   imageUrl: string;
   imageFile: File | null;
   imagePreview: string;
+
+  /** Serial already used by an existing device (from check-serial). */
+  serialError: string;
+  /** Serial repeated inside this batch. */
+  batchError: string;
+  /** Error returned when this device failed to save (e.g. 409). */
+  saveError: string;
+  checkingSerial: boolean;
 }
 
 @Component({
@@ -88,7 +103,11 @@ export class AddDevice {
       internalNotes: '',
       imageUrl: '',
       imageFile: null,
-      imagePreview: ''
+      imagePreview: '',
+      serialError: '',
+      batchError: '',
+      saveError: '',
+      checkingSerial: false
     };
   }
 
@@ -158,6 +177,9 @@ export class AddDevice {
 
       input.value = '';
       this.cdr.detectChanges();
+
+      // The import fills the serial (serviceTag): check it like a manual entry.
+      this.checkSerial(index);
     };
 
     reader.readAsText(file);
@@ -207,13 +229,88 @@ export class AddDevice {
     }
 
     this.devicesToAdd.splice(index, 1);
+    this.updateBatchDuplicates();
   }
 
   cancel(): void {
     this.router.navigate(['/devices']);
   }
 
+  /** Save is blocked while any serial is known to clash or is still being checked. */
+  get hasSerialProblems(): boolean {
+    return this.devicesToAdd.some(d => d.serialError || d.batchError || d.checkingSerial);
+  }
+
+  /** The serial input changed: old errors no longer apply until it is checked again. */
+  onSerialInput(device: DeviceForm): void {
+    device.serialError = '';
+    device.saveError = '';
+    this.updateBatchDuplicates();
+  }
+
+  /** On blur (and after a system-info import): check the batch and the server. */
+  checkSerial(index: number): void {
+    const device = this.devicesToAdd[index];
+    if (!device) return;
+
+    this.updateBatchDuplicates();
+
+    const serial = normalizeSerial(device.serialNumber);
+    device.serialError = '';
+
+    if (!serial) {
+      device.checkingSerial = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    device.checkingSerial = true;
+    this.cdr.detectChanges();
+
+    this.devicesService.checkSerial(serial).subscribe({
+      next: result => {
+        // Ignore a late answer for a value the user has already changed.
+        if (normalizeSerial(device.serialNumber) !== serial) return;
+
+        device.checkingSerial = false;
+        device.serialError = result.exists ? serialInUseMessage(result) : '';
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        // Not blocking: the server checks again on save.
+        device.checkingSerial = false;
+        this.notify.apiError(err, 'Could not check the serial number.');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  /** Marks devices whose serial repeats inside this batch. Returns true if any do. */
+  updateBatchDuplicates(): boolean {
+    const bySerial = new Map<string, number[]>();
+
+    this.devicesToAdd.forEach((device, i) => {
+      const serial = normalizeSerial(device.serialNumber);
+      if (serial) bySerial.set(serial, [...(bySerial.get(serial) ?? []), i]);
+    });
+
+    let found = false;
+
+    this.devicesToAdd.forEach((device, i) => {
+      const indexes = bySerial.get(normalizeSerial(device.serialNumber)) ?? [];
+      const others = indexes.filter(x => x !== i).map(x => `#${x + 1}`);
+
+      device.batchError = others.length ? `Same serial as Device ${others.join(', ')} in this batch` : '';
+      found ||= others.length > 0;
+    });
+
+    this.cdr.detectChanges();
+    return found;
+  }
+
   saveDevices(): void {
+    if (this.loading) return;
+
     const invalid = this.devicesToAdd.some(device => !device.deviceName.trim());
 
     if (invalid) {
@@ -221,50 +318,90 @@ export class AddDevice {
       return;
     }
 
+    if (this.updateBatchDuplicates()) {
+      this.notify.error('Some serial numbers are repeated in this batch.');
+      return;
+    }
+
+    if (this.hasSerialProblems) {
+      this.notify.error('Fix the serial number errors first.');
+      return;
+    }
+
     this.loading = true;
+    this.devicesToAdd.forEach(d => (d.saveError = ''));
     this.cdr.detectChanges();
 
-    const requests = this.devicesToAdd.map(device =>
-      this.devicesService.createDevice({
-        deviceName: device.deviceName.trim(),
-        imeiSerial: device.imeiSerial?.trim() || '',
-        serialNumber: device.serialNumber?.trim() || '',
-        deviceType: device.deviceType || 'N/A',
-        platform: device.deviceType || 'N/A',
-        brand: device.brand || '',
-        model: device.model || 'N/A',
-        ram: device.ram || '',
-        storage: device.storage1 || device.storage2 || '',
-        storage1: device.storage1 || '',
-        storage2: device.storage2 || '',
-        cpu: device.cpu || '',
-        gpu: device.gpu || '',
-        screens: device.screens,
-        printer: device.printer,
-        scanner: device.scanner,
-        status: device.initialStatus || 'Available',
-        notes: device.notes || '',
-        internalNotes: device.internalNotes || '',
-        imageUrl: device.imageUrl || '',
-        imageFile: device.imageFile
-      })
-    );
+    const batch = [...this.devicesToAdd];
 
-    forkJoin(requests).subscribe({
-      next: () => {
+    // One at a time: parallel creates could race on the next DEV-xxxx code.
+    from(batch)
+      .pipe(
+        concatMap(device =>
+          this.devicesService.createDevice(this.toRequest(device)).pipe(
+            map(() => ({ device, error: null as unknown })),
+            catchError(error => of({ device, error }))
+          )
+        ),
+        toArray()
+      )
+      .subscribe(results => {
         this.loading = false;
-        this.notify.success(`${this.devicesToAdd.length} device(s) added successfully`);
-        this.cdr.detectChanges();
 
-        setTimeout(() => this.router.navigate(['/devices']), 500);
-      },
-      error: (err) => {
-        console.error('Create device error:', err);
-        this.loading = false;
-        this.notify.apiError(err, 'Failed to save device.');
+        const failed = results.filter(r => r.error !== null);
+        const savedCount = results.length - failed.length;
+
+        if (failed.length === 0) {
+          this.notify.success(`${savedCount} device(s) added successfully`);
+          this.cdr.detectChanges();
+          this.router.navigate(['/devices']);
+          return;
+        }
+
+        for (const { device, error } of failed) {
+          console.error('Create device error:', error);
+          device.saveError = this.notify.getErrorMessage(error, 'Failed to save device.');
+        }
+
+        // Saved devices already exist; keep only the failed ones, with their data, for a retry.
+        this.devicesToAdd = failed.map(f => f.device);
+
+        const first = failed[0].device;
+        const label = first.deviceName.trim() || 'Device';
+        this.notify.error(
+          savedCount > 0
+            ? `${savedCount} saved, ${failed.length} not saved. ${label}: ${first.saveError}`
+            : `${label}: ${first.saveError}`
+        );
+
         this.cdr.detectChanges();
-      }
-    });
+      });
+  }
+
+  private toRequest(device: DeviceForm): CreateDeviceRequest {
+    return {
+      deviceName: device.deviceName.trim(),
+      imeiSerial: device.imeiSerial?.trim() || '',
+      serialNumber: normalizeSerial(device.serialNumber),
+      deviceType: device.deviceType || 'N/A',
+      platform: device.deviceType || 'N/A',
+      brand: device.brand || '',
+      model: device.model || 'N/A',
+      ram: device.ram || '',
+      storage: device.storage1 || device.storage2 || '',
+      storage1: device.storage1 || '',
+      storage2: device.storage2 || '',
+      cpu: device.cpu || '',
+      gpu: device.gpu || '',
+      screens: device.screens,
+      printer: device.printer,
+      scanner: device.scanner,
+      status: device.initialStatus || 'Available',
+      notes: device.notes || '',
+      internalNotes: device.internalNotes || '',
+      imageUrl: device.imageUrl || '',
+      imageFile: device.imageFile
+    };
   }
 
   toggleAddBox(type: 'type' | 'brand' | 'ram' | 'storage'): void {

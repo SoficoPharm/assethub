@@ -478,3 +478,21 @@ button:disabled {
     accent-color: #35b77c;
   }
 }
+
+.field-error {
+  margin-top: 6px;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.field-hint {
+  margin-top: 6px;
+  color: #667085;
+  font-size: 13px;
+}
+
+input.invalid {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+}
