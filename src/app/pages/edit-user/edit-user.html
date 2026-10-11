@@ -1,0 +1,314 @@
+<section class="form-page">
+  <div class="page-header">
+    <div class="breadcrumb">Users <span>›</span> Edit</div>
+    <h1>Edit User</h1>
+  </div>
+
+  @if (loading) {
+    <div class="center-loader">
+      <div class="spinner"></div>
+      <span>Loading user...</span>
+    </div>
+  }
+
+  @if (!loading) {
+    <div class="card-wrap">
+      <div class="section-title-row section-title-between">
+        <div class="section-title-left">
+          <button
+            class="back-btn"
+            type="button"
+            aria-label="Back"
+            [disabled]="saving || deleting"
+            (click)="backToList()"
+          >
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M15 18l-6-6 6-6"></path>
+            </svg>
+          </button>
+
+          <h2>{{ fullName || 'User' }} ({{ employeeId }})</h2>
+        </div>
+
+        <div class="edited-badge">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="8"></circle>
+            <path d="M12 8v4"></path>
+            <path d="M12 16h.01"></path>
+          </svg>
+          Last edited by admin
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="grid two-cols">
+          <div class="form-group">
+            <label>Full Name <span>*</span></label>
+            <input
+              type="text"
+              [(ngModel)]="fullName"
+              name="fullName"
+              [disabled]="saving || deleting"
+              placeholder="e.g. Jane Doe"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Email Address <span>*</span></label>
+            <input
+              type="email"
+              [(ngModel)]="email"
+              name="email"
+              [disabled]="saving || deleting"
+              placeholder="jane.doe@assethub.local"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Employee ID</label>
+            <input
+              type="text"
+              [(ngModel)]="employeeId"
+              name="employeeId"
+              [disabled]="saving || deleting"
+              placeholder="e.g. EMP-123"
+            />
+          </div>
+<div class="form-group">
+  <label>User Domain</label>
+  <input
+    type="text"
+    [(ngModel)]="userDomain"
+    name="userDomain"
+    [disabled]="saving || deleting"
+    placeholder="e.g. SOFICOPHARM\username"
+  />
+</div>
+          <div class="form-group">
+            <label>Department</label>
+
+            <div class="select-add-row">
+              <select
+                [(ngModel)]="department"
+                name="department"
+                [disabled]="saving || deleting"
+              >
+                <option value="">Select department</option>
+                @for (item of departments; track item) {
+                  <option [value]="item">{{ item }}</option>
+                }
+              </select>
+
+              <button
+                type="button"
+                class="add-mini-btn"
+                [disabled]="saving || deleting"
+                (click)="toggleAddBox('department')"
+              >
+                + Add
+              </button>
+            </div>
+
+            @if (showAddDepartment) {
+              <div class="inline-add-box">
+                <input
+                  type="text"
+                  [(ngModel)]="newDepartment"
+                  name="newDepartment"
+                  placeholder="e.g. Operations"
+                />
+
+                <div class="inline-add-actions">
+                  <button type="button" class="save-mini-btn" (click)="addDepartment()">
+                    Add
+                  </button>
+
+                  <button type="button" class="cancel-mini-btn" (click)="closeAllAddBoxes()">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label>Job Title</label>
+            <input
+              type="text"
+              [(ngModel)]="jobTitle"
+              name="jobTitle"
+              [disabled]="saving || deleting"
+              placeholder="e.g. Senior Developer"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>System Role <span>*</span></label>
+
+            <div class="select-add-row">
+              <select
+                [(ngModel)]="role"
+                name="role"
+                [disabled]="saving || deleting"
+              >
+                @for (item of roles; track item) {
+                  <option [value]="item">{{ item }}</option>
+                }
+              </select>
+
+              <button
+                type="button"
+                class="add-mini-btn"
+                [disabled]="saving || deleting"
+                (click)="toggleAddBox('role')"
+              >
+                + Add
+              </button>
+            </div>
+
+            @if (showAddRole) {
+              <div class="inline-add-box">
+                <input
+                  type="text"
+                  [(ngModel)]="newRole"
+                  name="newRole"
+                  placeholder="e.g. Team Lead"
+                />
+
+                <div class="inline-add-actions">
+                  <button type="button" class="save-mini-btn" (click)="addRole()">
+                    Add
+                  </button>
+
+                  <button type="button" class="cancel-mini-btn" (click)="closeAllAddBoxes()">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="images-section">
+          <div class="section-label">User Image</div>
+
+          <label class="upload-box" [class.disabled]="saving || deleting">
+            <input
+              type="file"
+              accept="image/*"
+              [disabled]="saving || deleting"
+              (change)="onImageSelected($event)"
+            />
+
+            <div class="upload-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 16V4"></path>
+                <path d="M7 9l5-5 5 5"></path>
+                <path d="M5 20h14"></path>
+              </svg>
+            </div>
+
+            <div>
+              <div class="upload-title">Upload user image</div>
+              <div class="upload-subtitle">
+                Upload employee profile image, ID image, or custody paper image
+              </div>
+            </div>
+          </label>
+
+          @if (imagePreview) {
+            <div class="images-list">
+              <div class="image-item">
+                <img
+                  [src]="imagePreview"
+                  alt="User preview"
+                  class="real-preview"
+                />
+
+                <div class="image-info">
+                  <div class="image-name">
+                    {{ imageName || 'Current user image' }}
+                  </div>
+                  <div class="image-meta">
+                    User Image
+                    @if (imageSize) {
+                      <span> • {{ imageSize }}</span>
+                    }
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  class="remove-image-btn"
+                  [disabled]="saving || deleting"
+                  (click)="removeImage()"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="actions split-actions">
+          <button
+            class="danger-link"
+            type="button"
+            [disabled]="saving || deleting"
+            (click)="deleteUser()"
+          >
+            @if (deleting) {
+              Deleting...
+            } @else {
+              Delete User
+            }
+          </button>
+
+          <div class="right-actions">
+            <button
+              class="secondary-btn"
+              type="button"
+              [disabled]="saving || deleting"
+              (click)="cancel()"
+            >
+              Cancel
+            </button>
+
+            <button
+              class="primary-btn"
+              type="button"
+              [disabled]="saving || deleting"
+              (click)="saveChanges()"
+            >
+              @if (saving) {
+                <span class="btn-loader"></span>
+                <span>Saving...</span>
+              } @else {
+                <span>Save Changes</span>
+              }
+            </button>
+          </div>
+        </div>
+
+        @if (showToast) {
+          <div class="success-toast" [class.error-toast]="toastType === 'error'">
+            {{ toastMessage }}
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (saving || deleting) {
+    <div class="page-loader">
+      <div class="spinner"></div>
+      <span>
+        @if (deleting) {
+          Deleting user...
+        } @else {
+          Saving changes...
+        }
+      </span>
+    </div>
+  }
+</section>

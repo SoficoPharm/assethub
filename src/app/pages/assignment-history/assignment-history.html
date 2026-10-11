@@ -1,0 +1,106 @@
+<section class="history-page">
+  <div class="page-header">
+    <h1>Assignment History</h1>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none">
+        <circle cx="11" cy="11" r="6"></circle>
+        <path d="M20 20l-4.2-4.2"></path>
+      </svg>
+
+      <input
+        type="text"
+        placeholder="Search assignments..."
+        [(ngModel)]="searchText"
+      />
+    </div>
+
+    <button type="button" class="filter-btn" (click)="clearFilters()">Clear</button>
+    <button type="button" class="icon-btn">↓</button>
+  </div>
+
+  <div class="subfilters">
+    <span>Status:</span>
+
+    @for (status of statuses; track status) {
+      <button
+        type="button"
+        class="chip"
+        [class.active]="selectedStatus === status"
+        (click)="setStatus(status)"
+      >
+        {{ status }}
+      </button>
+    }
+
+    <span class="date-label">Date Range:</span>
+
+    @for (range of dateRanges; track range) {
+      <button
+        type="button"
+        class="chip"
+        [class.active]="selectedDateRange === range"
+        (click)="setDateRange(range)"
+      >
+        {{ range }}
+      </button>
+    }
+  </div>
+
+  @if (loading) {
+    <div class="center-loader">
+      <div class="spinner"></div>
+      <span>Loading assignments...</span>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="error-box">{{ errorMessage }}</div>
+  }
+
+  @if (!loading) {
+    <div class="table-card">
+      <div class="table-head grid-row">
+        <div>ID</div>
+        <div>User</div>
+        <div>Device</div>
+        <div>Assigned Date</div>
+        <div>Returned Date</div>
+        <div>Status</div>
+      </div>
+
+      @for (row of filteredRows; track row.id) {
+        <div class="table-row grid-row">
+          <div class="id">{{ row.id }}</div>
+
+          <div class="user-cell">
+            <span class="avatar">{{ row.initials }}</span>
+            <span>{{ row.user }}</span>
+          </div>
+
+          <div class="device-cell">
+            <div class="primary">{{ row.device }}</div>
+            <div class="secondary">{{ row.model }}</div>
+          </div>
+
+          <div>{{ row.assignedDate }}</div>
+          <div class="returned">{{ row.returnedDate }}</div>
+
+          <div>
+            <span class="status-badge" [ngClass]="getStatusClass(row.status)">
+              {{ row.status }}
+            </span>
+          </div>
+        </div>
+      }
+
+      @if (filteredRows.length === 0) {
+        <div class="empty-state">
+          No assignments found.
+        </div>
+      }
+    </div>
+  }
+</section>

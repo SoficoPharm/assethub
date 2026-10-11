@@ -1,0 +1,268 @@
+.profile-page {
+  padding: 14px 28px 28px;
+  background: #f5f6f8;
+  min-height: calc(100vh - 72px);
+}
+
+.page-header {
+  padding: 10px 0 14px;
+  border-bottom: 1px solid #e5e7eb;
+  margin: 0 -28px 22px;
+  padding-left: 28px;
+  padding-right: 28px;
+
+  .breadcrumb {
+    color: #8a94a6;
+    font-size: 13px;
+    margin-bottom: 4px;
+
+    span {
+      margin: 0 6px;
+    }
+  }
+
+  h1 {
+    margin: 0;
+    color: #101828;
+    font-size: 18px;
+    font-weight: 700;
+  }
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e6e8ec;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.profile-summary-card {
+  overflow: hidden;
+}
+
+.profile-cover {
+  height: 88px;
+  background: linear-gradient(90deg, #59c79b 0%, #b7ddd0 100%);
+}
+
+.profile-avatar-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: -44px;
+}
+
+.profile-avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 4px solid #f4f6f8;
+  background: #bfe2d7;
+  color: #27b37d;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.profile-summary-content {
+  text-align: center;
+  padding: 16px 20px 22px;
+
+  h2 {
+    margin: 0 0 6px;
+    font-size: 19px;
+    color: #111827;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0 0 16px;
+    color: #7a8798;
+    font-size: 14px;
+  }
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eaf7f1;
+  color: #169b67;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #18b26b;
+}
+
+.personal-info-card {
+  padding: 24px;
+
+  h3 {
+    margin: 0 0 24px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+  }
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px 60px;
+}
+
+.info-item .label {
+  color: #8a94a6;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.info-item .value {
+  color: #111827;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.recent-activity-card {
+  padding: 20px 22px;
+
+  h3 {
+    margin: 0 0 18px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+  }
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.activity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 0;
+  border-bottom: 1px solid #eef1f4;
+
+  &:last-child {
+    border-bottom: 0;
+    padding-bottom: 4px;
+  }
+}
+
+.activity-title {
+  color: #1f2937;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.activity-time {
+  color: #7f8a9b;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.change-password-card {
+  padding: 24px;
+
+  h3 {
+    margin: 0 0 24px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+  }
+}
+
+.password-form {
+  max-width: 420px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+
+  label {
+    color: #111827;
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  input {
+    height: 42px;
+    border: 1px solid #dde3ea;
+    border-radius: 8px;
+    background: #fff;
+    padding: 0 14px;
+    outline: 0;
+    font-size: 14px;
+    color: #111827;
+    box-shadow: inset 0 1px 2px rgba(16, 24, 40, 0.03);
+
+    &:focus {
+      border-color: #35b77c;
+      box-shadow: 0 0 0 3px rgba(53, 183, 124, 0.12);
+    }
+  }
+}
+
+.primary-btn {
+  margin-top: 6px;
+  height: 42px;
+  border: 0;
+  border-radius: 8px;
+  background: #35b77c;
+  color: #fff;
+  padding: 0 16px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 1100px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+@media (max-width: 700px) {
+  .profile-page {
+    padding: 14px 16px 20px;
+  }
+
+  .page-header {
+    margin: 0 -16px 20px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .activity-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

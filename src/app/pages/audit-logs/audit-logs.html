@@ -1,0 +1,125 @@
+<section class="audit-page">
+  <div class="page-header">
+    <h1>Audit Logs</h1>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none">
+        <circle cx="11" cy="11" r="6"></circle>
+        <path d="M20 20l-4.2-4.2"></path>
+      </svg>
+
+      <input
+        type="text"
+        placeholder="Search logs by actor, target, or details..."
+        [(ngModel)]="searchText"
+        (input)="onSearchChange()"
+      />
+    </div>
+
+    <button type="button" class="filter-btn" (click)="clearFilters()">Clear</button>
+    <button type="button" class="export-btn" (click)="exportCsv()">Export CSV</button>
+    <button type="button" class="danger-btn" (click)="clearAllLogs()">Clear Logs</button>
+  </div>
+
+  <div class="action-filters">
+    <span>Action:</span>
+
+    @for (action of actions; track action) {
+      <button
+        type="button"
+        class="chip"
+        [class.active]="selectedAction === action"
+        (click)="setAction(action)"
+      >
+        {{ action }}
+      </button>
+    }
+  </div>
+
+  @if (isLoading && logs.length === 0) {
+    <div class="center-loader">
+      <div class="spinner"></div>
+      <span>Loading logs...</span>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="error-box">{{ errorMessage }}</div>
+  }
+
+  @if (!isLoading || logs.length > 0) {
+    <div class="table-card">
+      <div class="table-head grid-row">
+        <div>Timestamp</div>
+        <div>Actor</div>
+        <div>Action</div>
+        <div>Target</div>
+        <div>Details</div>
+      </div>
+
+      @if (!isLoading && filteredLogs.length === 0) {
+        <div class="empty-state">No logs found.</div>
+      }
+
+      @for (log of pagedLogs; track log.id) {
+        <div class="table-row grid-row">
+          <div class="timestamp">{{ log.timestamp }}</div>
+
+          <div class="actor-cell">
+            <span class="avatar">{{ log.actorInitials }}</span>
+            <span>{{ log.actor }}</span>
+          </div>
+
+          <div>
+            <span class="action-badge" [ngClass]="getActionClass(log.action)">
+              {{ log.action }}
+            </span>
+          </div>
+
+          <div class="target">{{ log.target }}</div>
+          <div class="details">{{ log.details }}</div>
+        </div>
+      }
+    </div>
+
+    <div class="pagination-bar">
+      <div class="entries">
+        Showing {{ startEntry }} to {{ endEntry }} of {{ filteredLogs.length }} entries
+      </div>
+
+      <div class="pages">
+        <button
+          type="button"
+          class="page-btn"
+          [disabled]="page === 1"
+          (click)="goToPage(page - 1)"
+        >
+          Previous
+        </button>
+
+        <button type="button" class="page-btn active">
+          {{ page }}
+        </button>
+
+        <span class="dots">/ {{ totalPages }}</span>
+
+        <button
+          type="button"
+          class="page-btn"
+          [disabled]="page === totalPages"
+          (click)="goToPage(page + 1)"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (showToast) {
+    <div class="success-toast" [class.error-toast]="toastType === 'error'">
+      {{ toastMessage }}
+    </div>
+  }
+</section>

@@ -1,0 +1,279 @@
+.assign-page {
+  padding: 18px 22px 26px;
+  background: #f5f6f8;
+  min-height: calc(100vh - 72px);
+}
+
+.page-header {
+  margin-bottom: 20px;
+
+  .breadcrumb {
+    color: #8a94a6;
+    font-size: 13px;
+    margin-bottom: 4px;
+
+    span {
+      margin: 0 6px;
+    }
+  }
+
+  h1 {
+    margin: 0;
+    color: #111827;
+    font-size: 18px;
+    font-weight: 700;
+  }
+}
+
+.assign-layout {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e6e8ec;
+  border-radius: 16px;
+  padding: 22px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+
+  h2 {
+    margin: 0;
+    font-size: 16px;
+    color: #111827;
+    font-weight: 700;
+  }
+}
+
+.step-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #eef2f5;
+  color: #667085;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.search-box {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #dce3ea;
+  border-radius: 8px;
+  padding: 0 12px;
+  margin-bottom: 16px;
+
+  svg {
+    width: 17px;
+    height: 17px;
+    stroke: #98a2b3;
+    stroke-width: 1.8;
+  }
+
+  input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-size: 14px;
+  }
+}
+
+.list-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.select-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #edf0f3;
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  transition: 0.2s ease;
+
+  &:hover {
+    border-color: #cfe6da;
+    background: #fbfdfc;
+  }
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #e8f7ef;
+  color: #35b77c;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.device-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #eef2f5;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    border: 1.8px solid #667085;
+    border-radius: 2px;
+  }
+}
+
+.select-content .title {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.select-content .sub {
+  margin-top: 4px;
+  color: #667085;
+  font-size: 13px;
+}
+.select-row.selected {
+  border-color: #35b77c;
+  background: #eaf7f1;
+}
+
+.assign-actions {
+  max-width: 900px;
+  margin: 18px auto 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.primary-btn {
+  height: 44px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 10px;
+  background: #35b77c;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.empty-state {
+  padding: 18px;
+  text-align: center;
+  color: #667085;
+  font-size: 14px;
+}
+
+.success-toast {
+  position: fixed;
+  right: 24px;
+  top: 90px;
+  z-index: 9999;
+  background: #35b77c;
+  color: #fff;
+  padding: 13px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.18);
+}
+.primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-loader {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.7s linear infinite;
+}
+
+.mini-loader {
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #667085;
+  font-size: 14px;
+}
+
+.mini-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #35b77c;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.page-loader {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(2px);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: #667085;
+  font-size: 14px;
+}
+
+.spinner {
+  width: 46px;
+  height: 46px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #35b77c;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.error-toast {
+  background: #dc2626 !important;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 900px) {
+  .assign-layout {
+    grid-template-columns: 1fr;
+  }
+}

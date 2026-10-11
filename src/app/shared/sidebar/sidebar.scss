@@ -1,0 +1,353 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #07162d 0%, #081227 100%);
+  color: #fff;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 18px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.brand-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(20, 191, 131, 0.12);
+  border: 1px solid rgba(20, 191, 131, 0.16);
+
+  svg {
+    width: 22px;
+    height: 22px;
+    stroke: #18c68a;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.brand-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #19c288;
+}
+
+.menu {
+  padding: 16px 10px;
+  flex: 1;
+}
+
+.menu-group + .menu-group {
+  margin-top: 4px;
+}
+
+.menu-item {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  border-radius: 10px;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.menu-item:hover,
+.menu-item.active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.static-item {
+  opacity: 0.96;
+}
+
+.submenu {
+  padding-left: 22px;
+  margin-top: 2px;
+}
+
+.child-item {
+  height: 38px;
+  color: #f1f5f9;
+  font-size: 14px;
+}
+
+.menu-label {
+  white-space: nowrap;
+}
+
+.menu-icon {
+  width: 16px;
+  height: 16px;
+  position: relative;
+  flex: 0 0 16px;
+  opacity: 0.95;
+}
+
+.menu-icon::before,
+.menu-icon::after {
+  content: '';
+  position: absolute;
+  box-sizing: border-box;
+}
+
+.menu-icon[data-icon='dashboard']::before {
+  inset: 1px;
+  border: 1.8px solid #d9e3f0;
+  border-radius: 3px;
+  box-shadow:
+    6px 0 0 -4.4px #d9e3f0,
+    0 6px 0 -4.4px #d9e3f0,
+    6px 6px 0 -4.4px #d9e3f0;
+}
+
+.menu-icon[data-icon='devices']::before {
+  left: 1px;
+  top: 1px;
+  width: 9px;
+  height: 14px;
+  border: 1.8px solid #d9e3f0;
+  border-radius: 2px;
+}
+
+.menu-icon[data-icon='devices']::after {
+  left: 4px;
+  bottom: 0;
+  width: 3px;
+  height: 1.8px;
+  background: #d9e3f0;
+  border-radius: 2px;
+}
+
+.menu-icon[data-icon='users']::before {
+  left: 1px;
+  top: 2px;
+  width: 5px;
+  height: 5px;
+  border: 1.8px solid #d9e3f0;
+  border-radius: 50%;
+  box-shadow: 7px 1px 0 -1px #07162d, 7px 1px 0 0 #d9e3f0;
+}
+
+.menu-icon[data-icon='users']::after {
+  left: 0;
+  bottom: 1px;
+  width: 14px;
+  height: 7px;
+  border: 1.8px solid #d9e3f0;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom: 0;
+}
+
+.menu-icon[data-icon='assignments']::before {
+  left: 2px;
+  top: 2px;
+  width: 12px;
+  height: 13px;
+  border: 1.8px solid #d9e3f0;
+  border-radius: 2px;
+}
+
+.menu-icon[data-icon='assignments']::after {
+  left: 5px;
+  top: 0;
+  width: 6px;
+  height: 3px;
+  border: 1.8px solid #d9e3f0;
+  border-bottom: 0;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.menu-icon[data-icon='reports']::before {
+  left: 1px;
+  bottom: 1px;
+  width: 2px;
+  height: 10px;
+  background: #d9e3f0;
+  box-shadow: 5px -3px 0 0 #d9e3f0, 10px -6px 0 0 #d9e3f0;
+  border-radius: 2px;
+}
+
+.menu-icon[data-icon='settings']::before,
+.menu-icon[data-icon='audit']::before {
+  inset: 2px;
+  border: 1.8px solid #d9e3f0;
+  border-radius: 50%;
+}
+
+.menu-icon[data-icon='settings']::after {
+  inset: -1px;
+  border-top: 1.8px solid #d9e3f0;
+  border-bottom: 1.8px solid #d9e3f0;
+  transform: rotate(45deg);
+}
+
+.menu-icon[data-icon='departments']::before {
+  left: 2px;
+  top: 2px;
+  width: 4px;
+  height: 4px;
+  border: 1.6px solid #d9e3f0;
+  box-shadow:
+    0 7px 0 -1px #07162d,
+    0 7px 0 0 #d9e3f0,
+    7px 0 0 -1px #07162d,
+    7px 0 0 0 #d9e3f0,
+    7px 7px 0 -1px #07162d,
+    7px 7px 0 0 #d9e3f0;
+}
+
+.menu-icon[data-icon='device-types']::before {
+  left: 0;
+  top: 2px;
+  width: 11px;
+  height: 7px;
+  border: 1.8px solid #d9e3f0;
+  border-radius: 2px;
+}
+
+.menu-icon[data-icon='device-types']::after {
+  right: 0;
+  bottom: 1px;
+  width: 7px;
+  height: 5px;
+  border: 1.8px solid #d9e3f0;
+  border-radius: 1px;
+}
+
+.menu-icon[data-icon='roles']::before {
+  left: 3px;
+  top: 1px;
+  width: 10px;
+  height: 13px;
+  border: 1.8px solid #d9e3f0;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.menu-icon[data-icon='audit']::after {
+  left: 7px;
+  top: -1px;
+  width: 1.8px;
+  height: 7px;
+  background: #d9e3f0;
+  transform-origin: bottom center;
+  transform: rotate(35deg);
+  border-radius: 2px;
+}
+
+.sidebar-footer {
+  padding: 16px 14px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.user-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(25, 194, 136, 0.16);
+  color: #52d8aa;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.user-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.email {
+  font-size: 12px;
+  color: #9fb0c8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logout-icon {
+  width: 18px;
+  height: 18px;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    stroke: #c9d5e5;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.user-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+@media (max-width: 1100px) {
+  .brand-text,
+  .menu-label,
+  .user-details,
+  .logout-icon {
+    display: none;
+  }
+
+  .brand-section,
+  .menu-item,
+  .child-item,
+  .user-block {
+    justify-content: center;
+  }
+
+  .submenu {
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    display: none;
+  }
+}

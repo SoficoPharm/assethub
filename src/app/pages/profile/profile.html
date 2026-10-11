@@ -1,0 +1,81 @@
+<section class="profile-page">
+  <div class="page-header">
+    <div class="breadcrumb">Settings <span>›</span> Profile</div>
+    <h1>My Profile</h1>
+  </div>
+
+  @if (loading) {
+    <div class="card personal-info-card">
+      <h3>Loading profile...</h3>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="card personal-info-card">
+      <h3>{{ errorMessage }}</h3>
+    </div>
+  }
+
+  @if (!loading && !errorMessage) {
+    <div class="profile-grid">
+      <div class="card profile-summary-card">
+        <div class="profile-cover"></div>
+
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar">{{ initials }}</div>
+        </div>
+
+        <div class="profile-summary-content">
+          <h2>{{ fullName }}</h2>
+          <p>{{ role }}</p>
+
+          <div class="status-badge">
+            <span class="status-dot"></span>
+            {{ status }}
+          </div>
+        </div>
+      </div>
+
+      <div class="card personal-info-card">
+        <h3>Personal Information</h3>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="label">Full Name</div>
+            <div class="value">{{ fullName }}</div>
+          </div>
+
+          <div class="info-item">
+            <div class="label">Username</div>
+            <div class="value">{{ userName }}</div>
+          </div>
+
+          <div class="info-item">
+            <div class="label">Email Address</div>
+            <div class="value">{{ email }}</div>
+          </div>
+
+          <div class="info-item">
+            <div class="label">Department</div>
+            <div class="value">{{ department }}</div>
+          </div>
+
+          <div class="info-item">
+            <div class="label">Role</div>
+            <div class="value">{{ role }}</div>
+          </div>
+
+          <div class="info-item">
+            <div class="label">Status</div>
+            <div class="value">{{ status }}</div>
+          </div>
+
+          <div class="info-item">
+            <div class="label">Joined Date</div>
+            <div class="value">{{ joinedDate }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</section>

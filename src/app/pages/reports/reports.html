@@ -1,0 +1,100 @@
+<section class="reports-page">
+  <div class="page-header">
+    <h1>Reports</h1>
+  </div>
+
+  <div class="reports-toolbar">
+    <button class="secondary-btn" type="button">
+      {{ selectedRange }}
+    </button>
+
+    <button class="primary-btn" type="button" (click)="exportPdf()">
+      Export All to PDF
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="center-loader">
+      <div class="spinner"></div>
+      <span>Loading reports...</span>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="error-box">{{ errorMessage }}</div>
+  }
+
+  @if (!loading) {
+    <div class="reports-grid">
+      <div class="card type-chart-card">
+        <h3>Devices per Type</h3>
+
+        @if (deviceTypes.length === 0) {
+          <div class="empty-state">No device type data found.</div>
+        } @else {
+          <div class="type-chart">
+            @for (item of deviceTypes; track item.name) {
+              <div class="type-col">
+                <div class="axis-values">
+                  <span>0</span>
+                  <span>{{ maxTypeValue }}</span>
+                </div>
+
+                <div class="bar-wrap">
+                  <div class="bar" [style.height.px]="getTypeHeight(item.value)"></div>
+                </div>
+
+                <div class="type-name">{{ item.name }}</div>
+                <div class="type-value">{{ item.value }}</div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="right-grid">
+        <div class="card dept-chart-card">
+          <h3>Devices per Department</h3>
+
+          @if (departmentData.length === 0) {
+            <div class="empty-state">No department data found.</div>
+          } @else {
+            <div class="dept-list">
+              @for (item of departmentData; track item.name) {
+                <div class="dept-row">
+                  <div class="dept-name">{{ item.name }}</div>
+
+                  <div class="dept-bar-wrap">
+                    <div class="dept-bar" [style.width.px]="getDepartmentWidth(item.value)"></div>
+                  </div>
+
+                  <div class="dept-value">{{ item.value }}</div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="card donut-card">
+          <h3>Availability Status</h3>
+
+          <div class="donut-wrap">
+            <div class="donut" [style.background]="donutStyle">
+              <div class="donut-center">
+                <strong>{{ totalDevicesText }}</strong>
+                <span>Total Devices</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="legend">
+            <span><i class="green"></i> Assigned: {{ availability.assigned }}</span>
+            <span><i class="gray"></i> Available: {{ availability.available }}</span>
+            <span><i class="amber"></i> Maintenance: {{ availability.maintenance }}</span>
+            <span><i class="red"></i> Inactive/Lost: {{ availability.inactiveLost }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</section>

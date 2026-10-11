@@ -1,0 +1,272 @@
+.users-page {
+  padding: 18px 22px 26px;
+  background: #f5f6f8;
+  min-height: calc(100vh - 72px);
+}
+
+.page-header {
+  margin-bottom: 16px;
+
+  h1 {
+    margin: 0;
+    color: #111827;
+    font-size: 18px;
+    font-weight: 700;
+  }
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  max-width: 420px;
+  width: 100%;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+  border-radius: 10px;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    stroke: #8a94a6;
+    stroke-width: 1.8;
+  }
+
+  input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-size: 14px;
+  }
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.primary-btn {
+  height: 42px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 8px;
+  background: #35b77c;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-card {
+  background: #fff;
+  border: 1px solid #e6e8ec;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.grid-row {
+  display: grid;
+  grid-template-columns:
+    minmax(250px, 2fr)
+    minmax(130px, 0.9fr)
+    minmax(170px, 1fr)
+    minmax(150px, 1fr)
+    minmax(190px, 1.2fr)
+    90px
+    90px
+    90px;
+  align-items: center;
+  gap: 18px;
+}
+
+.table-head {
+  min-height: 52px;
+  padding: 0 18px;
+  border-bottom: 1px solid #eaecf0;
+  color: #667085;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.table-row {
+  min-height: 72px;
+  padding: 0 18px;
+  border-bottom: 1px solid #f0f2f5;
+  color: #111827;
+  font-size: 14px;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #e8f7ef;
+  color: #35b77c;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.primary {
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.secondary {
+  margin-top: 2px;
+  color: #98a2b3;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-domain {
+  font-size: 13px;
+  color: #667085;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.device-badge {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #35b77c;
+  color: #fff;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.image-badge {
+  min-width: 56px;
+  height: 28px;
+  border-radius: 8px;
+  background: #eef6ff;
+  color: #2563eb;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.user-image-btn {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #dce3ea;
+  background: #fff;
+  border-radius: 8px;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.user-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.actions-cell {
+  display: flex;
+  align-items: center;
+}
+
+.edit-link {
+  color: #35b77c;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.center-loader {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: #667085;
+  font-size: 14px;
+}
+
+.spinner {
+  width: 42px;
+  height: 42px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #35b77c;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.error-box {
+  padding: 14px 16px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  background: #ffe5e5;
+  color: #d32f2f;
+}
+
+.empty-state {
+  padding: 32px;
+  text-align: center;
+  color: #667085;
+  font-size: 14px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1300px) {
+  .table-card {
+    overflow-x: auto;
+  }
+
+  .grid-row {
+    min-width: 1250px;
+  }
+}

@@ -1,0 +1,129 @@
+<section class="departments-page">
+  <div class="page-header">
+    <div class="breadcrumb">Settings <span>›</span> Departments</div>
+    <h1>Departments</h1>
+  </div>
+
+  <div class="page-grid">
+    <div class="card all-departments-card">
+      <h3>All Departments</h3>
+
+      <div class="dept-list">
+        @if (isLoading) {
+          <div class="empty-state">Loading departments...</div>
+        }
+
+        @if (!isLoading && departments.length === 0) {
+          <div class="empty-state">No departments found.</div>
+        }
+
+        @for (dept of departments; track dept.id) {
+          <div class="dept-row">
+            <div class="dept-info">
+              <div class="dept-name">{{ dept.departmentName }}</div>
+              <div class="dept-manager">
+                Manager: {{ dept.managerName || '—' }}
+              </div>
+            </div>
+
+            <div class="dept-meta">
+              <div class="members-label">Members</div>
+              <div class="members-count">{{ dept.membersCount }}</div>
+            </div>
+
+            <div class="dept-actions">
+              <button
+                type="button"
+                class="icon-btn"
+                [disabled]="isSaving || deletingId !== null"
+                (click)="editDepartment(dept)"
+              >
+                ✎
+              </button>
+
+              <button
+                type="button"
+                class="icon-btn delete"
+                [disabled]="isSaving || deletingId === dept.id"
+                (click)="deleteDepartment(dept)"
+              >
+                @if (deletingId === dept.id) {
+                  ...
+                } @else {
+                  🗑
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="card add-department-card">
+      <h3>{{ editId !== null ? 'Edit Department' : 'Add Department' }}</h3>
+
+      <div class="form-group">
+        <label>Department Name</label>
+        <input
+          type="text"
+          [(ngModel)]="departmentName"
+          name="departmentName"
+          [disabled]="isSaving"
+          placeholder="e.g. Finance"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Manager Name</label>
+        <input
+          type="text"
+          [(ngModel)]="managerName"
+          name="managerName"
+          [disabled]="isSaving"
+          placeholder="e.g. Salma R"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Members Count</label>
+        <input
+          type="number"
+          [(ngModel)]="membersCount"
+          name="membersCount"
+          [disabled]="isSaving"
+          placeholder="e.g. 20"
+        />
+      </div>
+
+      <button
+        class="primary-btn"
+        type="button"
+        [disabled]="isSaving"
+        (click)="createOrUpdateDepartment()"
+      >
+        @if (isSaving) {
+          Saving...
+        } @else {
+          {{ editId !== null ? 'Save Changes' : 'Create Department' }}
+        }
+      </button>
+
+      @if (editId !== null) {
+        <button
+          class="secondary-btn"
+          type="button"
+          [disabled]="isSaving"
+          (click)="cancelEdit()"
+        >
+          Cancel Edit
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (showToast) {
+    <div class="success-toast" [class.error-toast]="toastType === 'error'">
+      {{ toastMessage }}
+    </div>
+  }
+</section>

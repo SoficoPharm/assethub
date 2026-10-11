@@ -1,0 +1,156 @@
+<section class="dashboard-page">
+  <div class="page-header">
+    <h1>Dashboard</h1>
+  </div>
+
+  @if (loading) {
+    <div class="loading-box">Loading dashboard...</div>
+  }
+
+  @if (errorMessage) {
+    <div class="error-box">{{ errorMessage }}</div>
+  }
+
+  <div class="stats-grid">
+    @for (card of statCards; track card.label) {
+      <div class="stat-card">
+        <div class="stat-content">
+          <div class="stat-label">{{ card.label }}</div>
+          <div class="stat-value">{{ card.value }}</div>
+        </div>
+
+        <div class="stat-icon" [ngClass]="card.iconClass">
+          @switch (card.icon) {
+            @case ('devices') {
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="3.5" y="5" width="10" height="7" rx="2"></rect>
+                <path d="M8 15.5h7a2 2 0 0 0 2-2v-4"></path>
+                <rect x="14.5" y="11" width="6" height="8" rx="1.5"></rect>
+              </svg>
+            }
+
+            @case ('check') {
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="8"></circle>
+                <path d="M8.5 12l2.2 2.4L15.5 9.5"></path>
+              </svg>
+            }
+
+            @case ('clipboard') {
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="6" y="5" width="12" height="15" rx="2"></rect>
+                <path d="M9 5.5h6"></path>
+                <path d="M9 10h6"></path>
+                <path d="M9 14h6"></path>
+              </svg>
+            }
+
+            @case ('tool') {
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M14.7 6.3a4 4 0 0 0-5 5L4.5 16.5a2.1 2.1 0 0 0 3 3l5.2-5.2a4 4 0 0 0 5-5l-2.8 2.8-2.1-2.1 2.9-2.7Z"></path>
+              </svg>
+            }
+
+            @case ('warning') {
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="8"></circle>
+                <path d="M12 8.2v4.8"></path>
+                <circle cx="12" cy="16.5" r="0.8" fill="currentColor" stroke="none"></circle>
+              </svg>
+            }
+
+            @case ('users') {
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M8.2 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path>
+                <path d="M15.8 12.2a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2Z"></path>
+                <path d="M3.5 18c0-2.3 2.2-4.2 4.8-4.2S13 15.7 13 18"></path>
+                <path d="M12.8 18c.2-1.8 1.9-3.1 4-3.1 2.2 0 4 1.4 4 3.1"></path>
+              </svg>
+            }
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="charts-grid">
+    <div class="panel-card chart-card donut-card">
+      <div class="panel-title">Devices by Type</div>
+
+      <div class="donut-wrapper">
+        <div class="donut-chart" [style.background]="donutStyle">
+          <div class="donut-hole"></div>
+        </div>
+      </div>
+
+      <div class="legend-list">
+        @for (item of deviceTypes; track item.name) {
+          <div class="legend-item">
+            <span class="legend-dot" [ngClass]="item.className"></span>
+            {{ item.name }}
+          </div>
+        }
+
+        @if (deviceTypes.length === 0 && !loading) {
+          <div class="empty-state">No device types data.</div>
+        }
+      </div>
+    </div>
+
+    <div class="panel-card chart-card bars-card">
+      <div class="panel-title">Devices by Platform</div>
+
+      <div class="bars-area">
+        <div class="y-axis">
+          <span>{{ getMaxPlatformValue() }}</span>
+          <span>{{ getMaxPlatformValue() * 0.75 | number:'1.0-0' }}</span>
+          <span>{{ getMaxPlatformValue() * 0.5 | number:'1.0-0' }}</span>
+          <span>{{ getMaxPlatformValue() * 0.25 | number:'1.0-0' }}</span>
+          <span>0</span>
+        </div>
+
+        <div class="bars-grid">
+          @for (platform of platforms; track platform.name) {
+            <div class="bar-item">
+              <div class="bar-track">
+                <div
+                  class="bar-fill"
+                  [ngClass]="platform.className"
+                  [style.height.px]="getBarHeight(platform.value)"
+                ></div>
+              </div>
+              <div class="bar-label">{{ platform.name }}</div>
+            </div>
+          }
+
+          @if (platforms.length === 0 && !loading) {
+            <div class="empty-state">No platform data.</div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-card activity-card">
+      <div class="panel-title">Recent Activity</div>
+
+      <div class="activity-list">
+        @for (item of activities; track item.title) {
+          <div class="activity-item">
+            <span class="activity-dot" [ngClass]="item.color"></span>
+
+            <div class="activity-content">
+              <div class="activity-title">{{ item.title }}</div>
+              <div class="activity-meta">
+                {{ item.user }} <span>•</span> {{ item.time }}
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activities.length === 0 && !loading) {
+          <div class="empty-state">No recent activity.</div>
+        }
+      </div>
+    </div>
+  </div>
+</section>

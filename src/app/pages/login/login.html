@@ -1,0 +1,91 @@
+<div class="login-page">
+  <section class="login-hero">
+    <div class="brand-row">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="3.5" y="4.5" width="12" height="9" rx="2"></rect>
+          <path d="M8 18.5h8.5a2 2 0 0 0 2-2v-4"></path>
+          <path d="M10 13.5v5"></path>
+          <path d="M7 18.5h6"></path>
+        </svg>
+      </div>
+      <div class="brand-name">AssetHub</div>
+    </div>
+
+    <div class="hero-content">
+      <h1>IT Operations &amp; Device Management Console</h1>
+      <p>
+        Track every company-owned device, assign them to employees, and
+        maintain a clean audit trail in one centralized platform.
+      </p>
+    </div>
+
+    <div class="hero-footer">© 2025 AssetHub. Internal Use Only.</div>
+  </section>
+
+  <section class="login-panel">
+    <div class="panel-card">
+      <div class="heading-block">
+        <h2>Welcome back</h2>
+        <p>Sign in to your admin account to continue</p>
+      </div>
+
+      <form class="login-form" (ngSubmit)="signIn()">
+        <div class="form-group">
+          <label for="email">Email or Username</label>
+          <input
+            id="email"
+            type="text"
+            name="email"
+            [(ngModel)]="email"
+            placeholder="admin@assethub.local"
+          />
+        </div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label for="password">Password</label>
+            <a href="javascript:void(0)">Forgot password?</a>
+          </div>
+          <input
+            id="password"
+            type="password"
+            name="password"
+            [(ngModel)]="password"
+            placeholder="••••••••••"
+          />
+        </div>
+
+        <label class="remember-row">
+          <input type="checkbox" name="rememberMe" [(ngModel)]="rememberMe" />
+          <span class="custom-check"></span>
+          <span>Remember me for 30 days</span>
+        </label>
+        @if (errorMessage) {
+          <div class="error-box">
+            {{ errorMessage }}
+          </div>
+        }
+<button class="sign-in-btn" type="submit" [disabled]="loading">
+  
+  <ng-container *ngIf="!loading; else loadingTpl">
+    <span>Sign In</span>
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M5 12h14"></path>
+      <path d="M13 6l6 6-6 6"></path>
+    </svg>
+  </ng-container>
+
+  <ng-template #loadingTpl>
+    <div class="spinner"></div>
+  </ng-template>
+
+</button>
+      </form>
+
+      <div class="help-text">
+        Need access? Contact the <a href="javascript:void(0)">IT Helpdesk.</a>
+      </div>
+    </div>
+  </section>
+</div>

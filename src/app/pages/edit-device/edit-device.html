@@ -1,0 +1,267 @@
+<section class="device-form-page">
+@if (loading) {
+  <div class="center-loader">
+    <div class="spinner"></div>
+  </div>
+}
+
+  <div class="page-header">
+    <div class="breadcrumb">Devices <span>›</span> Edit</div>
+    <h1>Edit Device</h1>
+  </div>
+
+  <div class="content-wrap">
+    <div class="section-header section-header-between">
+      <div class="section-title-left">
+        <button type="button" class="back-btn" aria-label="Back" (click)="backToList()">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+        </button>
+
+        <h2>{{ deviceName || 'Device' }} ({{ deviceCode }})</h2>
+      </div>
+
+      <div class="edited-badge">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="8"></circle>
+          <path d="M12 8v4"></path>
+          <path d="M12 16h.01"></path>
+        </svg>
+        Last edited by admin
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="section-block">
+        <div class="section-title">Identification</div>
+
+        <div class="grid two-cols">
+          <div class="form-group">
+            <label>Device Name <span>*</span></label>
+            <input type="text" name="deviceName" [(ngModel)]="deviceName" />
+          </div>
+
+<div class="form-group">
+  <label>Device Image</label>
+
+  <div class="upload-box" [class.disabled]="saving">
+    <input
+      type="file"
+      accept="image/*"
+      name="imageFile"
+      [disabled]="saving"
+      (change)="onImageSelected($event)"
+    />
+    <span>Upload image from folder</span>
+  </div>
+
+  @if (imagePreview) {
+    <div class="image-preview-wrap">
+      <img [src]="imagePreview" alt="Device preview" class="image-preview" />
+
+      <button
+        type="button"
+        class="remove-image-btn"
+        [disabled]="saving"
+        (click)="removeImage()"
+      >
+        Remove Image
+      </button>
+    </div>
+  }
+</div>
+        </div>
+
+        <div class="grid two-cols">
+          <div class="form-group">
+            <label>Serial Number</label>
+            <input type="text" name="serialNumber" [(ngModel)]="serialNumber" />
+          </div>
+
+          <div class="form-group">
+            <label>Device Image URL</label>
+            <input type="text" name="imageUrl" [(ngModel)]="imageUrl" />
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <div class="section-title">Specifications</div>
+
+        <div class="grid two-cols">
+          <div class="form-group">
+            <label>Device Type</label>
+
+            <div class="select-add-row">
+              <select name="deviceType" [(ngModel)]="deviceType">
+                @for (item of deviceTypes; track item) {
+                  <option [value]="item">{{ item }}</option>
+                }
+              </select>
+
+              <button type="button" class="add-mini-btn" (click)="toggleAddBox('type')">
+                + Add
+              </button>
+            </div>
+
+            @if (showAddType) {
+              <div class="inline-add-box">
+                <input type="text" name="newType" [(ngModel)]="newType" placeholder="e.g. Smartwatch" />
+                <div class="inline-add-actions">
+                  <button type="button" class="save-mini-btn" (click)="addDeviceType()">Add</button>
+                  <button type="button" class="cancel-mini-btn" (click)="closeAllAddBoxes()">Cancel</button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label>Brand</label>
+
+            <div class="select-add-row">
+              <select name="brand" [(ngModel)]="brand">
+                @for (item of brands; track item) {
+                  <option [value]="item">{{ item }}</option>
+                }
+              </select>
+
+              <button type="button" class="add-mini-btn" (click)="toggleAddBox('brand')">
+                + Add
+              </button>
+            </div>
+
+            @if (showAddBrand) {
+              <div class="inline-add-box">
+                <input type="text" name="newBrand" [(ngModel)]="newBrand" placeholder="e.g. HP" />
+                <div class="inline-add-actions">
+                  <button type="button" class="save-mini-btn" (click)="addBrand()">Add</button>
+                  <button type="button" class="cancel-mini-btn" (click)="closeAllAddBoxes()">Cancel</button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="grid one-col">
+          <div class="form-group">
+            <label>Model</label>
+            <input type="text" name="model" [(ngModel)]="model" />
+          </div>
+        </div>
+
+        <div class="grid two-cols">
+          <div class="form-group">
+            <label>RAM</label>
+
+            <div class="select-add-row">
+              <select name="ram" [(ngModel)]="ram">
+                @for (item of ramOptions; track item) {
+                  <option [value]="item">{{ item }}</option>
+                }
+              </select>
+
+              <button type="button" class="add-mini-btn" (click)="toggleAddBox('ram')">
+                + Add
+              </button>
+            </div>
+
+            @if (showAddRam) {
+              <div class="inline-add-box">
+                <input type="text" name="newRam" [(ngModel)]="newRam" placeholder="e.g. 64 GB" />
+                <div class="inline-add-actions">
+                  <button type="button" class="save-mini-btn" (click)="addRam()">Add</button>
+                  <button type="button" class="cancel-mini-btn" (click)="closeAllAddBoxes()">Cancel</button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label>Storage 1</label>
+            <input type="text" name="storage1" [(ngModel)]="storage1" />
+          </div>
+        </div>
+
+        <div class="grid one-col">
+          <div class="form-group">
+            <label>Storage 2</label>
+            <input type="text" name="storage2" [(ngModel)]="storage2" />
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <div class="section-title">Status &amp; Notes</div>
+
+        <div class="grid one-col narrow-col">
+          <div class="form-group">
+            <label>Status</label>
+
+            <div class="select-add-row">
+              <select class="status-select" name="status" [(ngModel)]="status">
+                @for (item of statusOptions; track item) {
+                  <option [value]="item">{{ item }}</option>
+                }
+              </select>
+
+              <button type="button" class="add-mini-btn" (click)="toggleAddBox('status')">
+                + Add
+              </button>
+            </div>
+
+            @if (showAddStatus) {
+              <div class="inline-add-box">
+                <input type="text" name="newStatus" [(ngModel)]="newStatus" placeholder="e.g. Maintenance" />
+                <div class="inline-add-actions">
+                  <button type="button" class="save-mini-btn" (click)="addStatus()">Add</button>
+                  <button type="button" class="cancel-mini-btn" (click)="closeAllAddBoxes()">Cancel</button>
+                </div>
+              </div>
+            }
+
+            <div class="hint-text">Current status: {{ status }}</div>
+          </div>
+        </div>
+
+        <div class="grid one-col">
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea name="notes" [(ngModel)]="notes"></textarea>
+          </div>
+        </div>
+
+        <div class="grid one-col">
+          <div class="form-group">
+            <label>Internal Notes</label>
+            <textarea name="internalNotes" [(ngModel)]="internalNotes"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions split-actions">
+        <button type="button" class="danger-link" [disabled]="saving" (click)="deleteDevice()">
+          Delete Device
+        </button>
+
+        <div class="right-actions">
+          <button type="button" class="secondary-btn" [disabled]="saving" (click)="cancel()">Cancel</button>
+<button type="button" class="primary-btn" [disabled]="saving" (click)="saveChanges()">
+  @if (saving) {
+    <span class="btn-loader"></span>
+    <span>Saving...</span>
+  } @else {
+    <span>Save Changes</span>
+  }
+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (showToast) {
+    <div class="success-toast" [class.error-toast]="toastType === 'error'">
+      {{ toastMessage }}
+    </div>
+  }
+</section>

@@ -1,0 +1,473 @@
+<div class="multi-device-toolbar">
+  <div>
+    <h3>Devices To Add</h3>
+    <p>Add laptop, mobile, bag, SIM line, or any company asset.</p>
+  </div>
+
+  <button
+    type="button"
+    class="add-device-line-btn"
+    [disabled]="loading"
+    (click)="addAnotherDevice()"
+  >
+    + Add Another Device
+  </button>
+</div>
+
+@for (device of devicesToAdd; track $index; let i = $index) {
+  <div class="form-card device-card">
+  <div class="device-card-header">
+  <div>
+    <div class="device-card-title">Device #{{ i + 1 }}</div>
+    <div class="device-card-subtitle">
+      {{ device.deviceType || 'New asset' }}
+      @if (device.deviceName) {
+        <span> · {{ device.deviceName }}</span>
+      }
+    </div>
+  </div>
+
+  <div class="device-header-actions">
+    <button
+      type="button"
+      class="scan-device-btn"
+      [disabled]="loading"
+      (click)="openScanFile(i)"
+    >
+      Upload System Info
+    </button>
+
+    <input
+      #scanFileInput
+      type="file"
+      accept=".json,application/json"
+      hidden
+      (change)="onDeviceScanFile($event, i)"
+    />
+
+    <button
+      type="button"
+      class="remove-device-btn"
+      [disabled]="devicesToAdd.length === 1 || loading"
+      (click)="removeDevice(i)"
+    >
+      Remove
+    </button>
+  </div>
+</div>
+
+    <div class="section-block">
+      <div class="section-title">Identification</div>
+
+      <div class="grid two-cols">
+        <div class="form-group">
+          <label>Device Name <span>*</span></label>
+          <input
+            type="text"
+            [name]="'deviceName' + i"
+            [(ngModel)]="device.deviceName"
+            [disabled]="loading"
+            placeholder="e.g. Ahmed Laptop"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>IMEI <small>(Optional)</small></label>
+          <input
+            type="text"
+            [name]="'imeiSerial' + i"
+            [(ngModel)]="device.imeiSerial"
+            [disabled]="loading"
+            placeholder="Enter IMEI"
+          />
+        </div>
+      </div>
+
+      <div class="grid two-cols">
+        <div class="form-group">
+          <label>Serial Number</label>
+          <input
+            type="text"
+            [name]="'serialNumber' + i"
+            [(ngModel)]="device.serialNumber"
+            [disabled]="loading"
+            placeholder="Enter Serial Number"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Device Image</label>
+
+          <div class="upload-box" [class.disabled]="loading">
+            <input
+              type="file"
+              accept="image/*"
+              [name]="'imageFile' + i"
+              [disabled]="loading"
+              (change)="onImageSelected($event, i)"
+            />
+            <span>Upload image from folder</span>
+          </div>
+
+          @if (device.imagePreview) {
+            <div class="image-preview-wrap">
+              <img
+                [src]="device.imagePreview"
+                alt="Device preview"
+                class="image-preview"
+              />
+
+              <button
+                type="button"
+                class="remove-image-btn"
+                [disabled]="loading"
+                (click)="removeImage(i)"
+              >
+                Remove Image
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-title">Specifications</div>
+
+      <div class="grid two-cols">
+        <div class="form-group">
+          <label>Device Type</label>
+
+          <div class="select-add-row">
+            <select
+              [name]="'deviceType' + i"
+              [(ngModel)]="device.deviceType"
+              [disabled]="loading"
+            >
+              <option value="">Select type</option>
+              @for (item of deviceTypes; track item) {
+                <option [value]="item">{{ item }}</option>
+              }
+            </select>
+
+            <button
+              type="button"
+              class="add-mini-btn"
+              [disabled]="loading"
+              (click)="toggleAddBox('type')"
+            >
+              + Add
+            </button>
+          </div>
+
+          @if (showAddType) {
+            <div class="inline-add-box">
+              <input
+                type="text"
+                name="newType"
+                [(ngModel)]="newType"
+                placeholder="e.g. Headset"
+              />
+
+              <div class="inline-add-actions">
+                <button type="button" class="save-mini-btn" (click)="addDeviceType()">Add</button>
+                <button type="button" class="cancel-mini-btn" (click)="closeAllAddBoxes()">Cancel</button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Brand</label>
+
+          <div class="select-add-row">
+            <select
+              [name]="'brand' + i"
+              [(ngModel)]="device.brand"
+              [disabled]="loading"
+            >
+              <option value="">Select brand</option>
+              @for (item of brands; track item) {
+                <option [value]="item">{{ item }}</option>
+              }
+            </select>
+
+            <button
+              type="button"
+              class="add-mini-btn"
+              [disabled]="loading"
+              (click)="toggleAddBox('brand')"
+            >
+              + Add
+            </button>
+          </div>
+
+          @if (showAddBrand) {
+            <div class="inline-add-box">
+              <input
+                type="text"
+                name="newBrand"
+                [(ngModel)]="newBrand"
+                placeholder="e.g. Xiaomi"
+              />
+
+              <div class="inline-add-actions">
+                <button type="button" class="save-mini-btn" (click)="addBrand()">Add</button>
+                <button type="button" class="cancel-mini-btn" (click)="closeAllAddBoxes()">Cancel</button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="grid one-col">
+        <div class="form-group">
+          <label>Model</label>
+          <input
+            type="text"
+            [name]="'model' + i"
+            [(ngModel)]="device.model"
+            [disabled]="loading"
+            placeholder="e.g. ThinkPad X1"
+          />
+        </div>
+      </div>
+
+      <div class="grid two-cols">
+        <div class="form-group">
+          <label>CPU</label>
+          <input
+            type="text"
+            [name]="'cpu' + i"
+            [(ngModel)]="device.cpu"
+            [disabled]="loading"
+            placeholder="e.g. Intel Core i7"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>GPU</label>
+          <input
+            type="text"
+            [name]="'gpu' + i"
+            [(ngModel)]="device.gpu"
+            [disabled]="loading"
+            placeholder="e.g. NVIDIA RTX 3060"
+          />
+        </div>
+      </div>
+
+      <div class="grid two-cols">
+        <div class="form-group">
+          <label>RAM</label>
+
+          <div class="select-add-row">
+            <select
+              [name]="'ram' + i"
+              [(ngModel)]="device.ram"
+              [disabled]="loading"
+            >
+              <option value="">Select RAM</option>
+              @for (item of ramOptions; track item) {
+                <option [value]="item">{{ item }}</option>
+              }
+            </select>
+
+            <button
+              type="button"
+              class="add-mini-btn"
+              [disabled]="loading"
+              (click)="toggleAddBox('ram')"
+            >
+              + Add
+            </button>
+          </div>
+
+          @if (showAddRam) {
+            <div class="inline-add-box">
+              <input
+                type="text"
+                name="newRam"
+                [(ngModel)]="newRam"
+                placeholder="e.g. 64 GB"
+              />
+
+              <div class="inline-add-actions">
+                <button type="button" class="save-mini-btn" (click)="addRam()">Add</button>
+                <button type="button" class="cancel-mini-btn" (click)="closeAllAddBoxes()">Cancel</button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Screens</label>
+          <input
+            type="number"
+            min="0"
+            [name]="'screens' + i"
+            [(ngModel)]="device.screens"
+            [disabled]="loading"
+            placeholder="e.g. 2"
+          />
+        </div>
+      </div>
+
+      <div class="grid two-cols">
+        <div class="form-group">
+          <label>Storage 1</label>
+          <input
+            type="text"
+            [name]="'storage1' + i"
+            [(ngModel)]="device.storage1"
+            [disabled]="loading"
+            placeholder="e.g. 256 GB SSD"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Storage 2</label>
+          <input
+            type="text"
+            [name]="'storage2' + i"
+            [(ngModel)]="device.storage2"
+            [disabled]="loading"
+            placeholder="Optional second storage"
+          />
+        </div>
+      </div>
+
+      <div class="grid one-col">
+        <div class="form-group">
+          <label>Accessories</label>
+
+          <div class="checkbox-row">
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                [name]="'printer' + i"
+                [(ngModel)]="device.printer"
+                [disabled]="loading"
+              />
+              <span>Printer</span>
+            </label>
+
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                [name]="'scanner' + i"
+                [(ngModel)]="device.scanner"
+                [disabled]="loading"
+              />
+              <span>Scanner</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-title">Status &amp; Notes</div>
+
+      <div class="grid one-col narrow-col">
+        <div class="form-group">
+          <label>Initial Status</label>
+
+          <div class="select-add-row">
+            <select
+              [name]="'initialStatus' + i"
+              [(ngModel)]="device.initialStatus"
+              [disabled]="loading"
+            >
+              @for (item of statusOptions; track item) {
+                <option [value]="item">{{ item }}</option>
+              }
+            </select>
+
+            <button
+              type="button"
+              class="add-mini-btn"
+              [disabled]="loading"
+              (click)="toggleAddBox('status')"
+            >
+              + Add
+            </button>
+          </div>
+
+          @if (showAddStatus) {
+            <div class="inline-add-box">
+              <input
+                type="text"
+                name="newStatus"
+                [(ngModel)]="newStatus"
+                placeholder="e.g. Maintenance"
+              />
+
+              <div class="inline-add-actions">
+                <button type="button" class="save-mini-btn" (click)="addStatus()">Add</button>
+                <button type="button" class="cancel-mini-btn" (click)="closeAllAddBoxes()">Cancel</button>
+              </div>
+            </div>
+          }
+
+          <div class="hint-text">Save as Available, then assign it later.</div>
+        </div>
+      </div>
+
+      <div class="grid one-col">
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea
+            [name]="'notes' + i"
+            [(ngModel)]="device.notes"
+            [disabled]="loading"
+            placeholder="Public notes..."
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="grid one-col">
+        <div class="form-group">
+          <label>Internal Notes</label>
+          <textarea
+            [name]="'internalNotes' + i"
+            [(ngModel)]="device.internalNotes"
+            [disabled]="loading"
+            placeholder="Any scratches, accessories, SIM number, bag details..."
+          ></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<div class="form-actions sticky-actions">
+  <button
+    type="button"
+    class="secondary-btn"
+    [disabled]="loading"
+    (click)="cancel()"
+  >
+    Cancel
+  </button>
+
+  <button
+    type="button"
+    class="primary-btn"
+    [disabled]="loading"
+    (click)="saveDevices()"
+  >
+    @if (loading) {
+      <span class="btn-loader"></span>
+      <span>Saving...</span>
+    } @else {
+      <span>Save {{ devicesToAdd.length }} Device(s)</span>
+    }
+  </button>
+</div>
+
+@if (showToast) {
+  <div class="success-toast" [class.error-toast]="toastType === 'error'">
+    {{ toastMessage }}
+  </div>
+}

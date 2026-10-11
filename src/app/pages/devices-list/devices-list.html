@@ -1,0 +1,184 @@
+<section class="list-page">
+  <div class="page-header">
+    <h1>Devices</h1>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none">
+        <circle cx="11" cy="11" r="6"></circle>
+        <path d="M20 20l-4.2-4.2"></path>
+      </svg>
+
+      <input
+        type="text"
+        placeholder="Search anything in table..."
+        [(ngModel)]="searchText"
+        (ngModelChange)="page = 1"
+      />
+    </div>
+
+    <div class="filters">
+      <span class="filter-label">Status:</span>
+
+      @for (status of statuses; track status) {
+        <button
+          type="button"
+          class="chip"
+          [class.active]="selectedStatus === status"
+          (click)="setStatus(status)"
+        >
+          {{ status }}
+        </button>
+      }
+    </div>
+
+    <div class="filters">
+      <span class="filter-label">Type:</span>
+
+      @for (type of types; track type) {
+        <button
+          type="button"
+          class="chip"
+          [class.active]="selectedType === type"
+          (click)="setType(type)"
+        >
+          {{ type }}
+        </button>
+      }
+    </div>
+
+    <div class="toolbar-actions">
+      <button type="button" class="filter-btn" (click)="clearFilters()">
+        Clear
+      </button>
+
+      <a routerLink="/devices/add" class="primary-btn">+ Add Device</a>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="center-loader">
+      <div class="spinner"></div>
+      <span>Loading devices...</span>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="error-box">{{ errorMessage }}</div>
+  }
+
+  @if (!loading) {
+    <div class="table-card">
+      <div class="table-head grid-row">
+        <div class="col-check"><input type="checkbox" /></div>
+        <div class="col-image">Image</div>
+        <div class="col-name">Device / Name</div>
+        <div class="col-serial">IMEI / Serial</div>
+        <div class="col-type">Type</div>
+        <div class="col-model">Model</div>
+        <div class="col-status">Status</div>
+        <div class="col-user">Assigned User</div>
+        <div class="col-actions">Actions</div>
+      </div>
+
+      @for (device of pagedDevices; track device.code) {
+        <div class="table-row grid-row">
+          <div class="col-check"><input type="checkbox" /></div>
+
+          <div class="col-image">
+            @if (device.imageUrl) {
+              <button
+                type="button"
+                class="image-btn"
+                title="Open image"
+                (click)="openImage(device)"
+              >
+                <img
+                  class="device-img"
+                  [src]="getDeviceImage(device)"
+                  [alt]="device.name"
+                  (error)="onImageError($event, device)"
+                />
+              </button>
+            } @else {
+              <div class="device-placeholder">
+                {{ getDeviceInitial(device) }}
+              </div>
+            }
+          </div>
+
+          <div class="col-name">
+            <div class="primary">{{ device.name }}</div>
+            <div class="secondary">{{ device.code }}</div>
+          </div>
+
+          <div class="col-serial">{{ device.serial }}</div>
+
+          <div class="col-type">
+            <span class="type-icon"></span>
+            {{ device.type }}
+          </div>
+
+          <div class="col-model">{{ device.model }}</div>
+
+          <div class="col-status">
+            <span class="status-badge" [ngClass]="getStatusClass(device.status)">
+              {{ device.status }}
+            </span>
+          </div>
+
+          <div class="col-user">
+            @if (device.assignedUser !== '—') {
+              <span class="user-avatar">{{ device.initials }}</span>
+            }
+
+            <span>{{ device.assignedUser }}</span>
+          </div>
+
+          <div class="col-actions">
+            <a [routerLink]="['/devices/edit', device.code]" class="edit-link">
+              Edit
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (filteredDevices.length === 0) {
+      <div class="empty-state">No devices found.</div>
+    }
+
+    <div class="pagination-bar">
+      <div class="entries">
+        Showing {{ startEntry }} to {{ endEntry }} of {{ filteredDevices.length }} entries
+      </div>
+
+      <div class="pages">
+        <button
+          type="button"
+          class="page-btn"
+          [disabled]="page === 1"
+          (click)="goToPage(page - 1)"
+        >
+          Previous
+        </button>
+
+        <button type="button" class="page-btn active">
+          {{ page }}
+        </button>
+
+        <span class="dots">/ {{ totalPages }}</span>
+
+        <button
+          type="button"
+          class="page-btn"
+          [disabled]="page === totalPages"
+          (click)="goToPage(page + 1)"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  }
+</section>

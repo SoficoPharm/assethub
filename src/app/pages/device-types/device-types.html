@@ -1,0 +1,134 @@
+<section class="types-page">
+  <div class="page-header">
+    <div class="breadcrumb">Settings <span>›</span> Device Types</div>
+    <h1>Device Types</h1>
+  </div>
+
+  <div class="types-grid">
+    <div class="card">
+      <h3>Configured Types</h3>
+
+      <div class="type-list">
+        @if (isLoading) {
+          <div class="empty-state">Loading device types...</div>
+        }
+
+        @if (!isLoading && types.length === 0) {
+          <div class="empty-state">No device types found.</div>
+        }
+
+        @for (item of types; track item.id) {
+          <div class="type-row">
+            <div class="left">
+              <div class="icon-box">{{ item.icon }}</div>
+              <div class="name">{{ item.typeName }}</div>
+            </div>
+
+            <div class="count">
+              <strong>{{ item.devicesCount }}</strong>
+              <span>Devices</span>
+            </div>
+
+            <div class="actions">
+              <button
+                type="button"
+                [disabled]="isSaving || deletingId !== null"
+                (click)="editType(item)"
+              >
+                ✎
+              </button>
+
+              <button
+                type="button"
+                class="delete"
+                [disabled]="isSaving || deletingId === item.id"
+                (click)="deleteType(item)"
+              >
+                @if (deletingId === item.id) {
+                  ...
+                } @else {
+                  🗑
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="card add-card">
+      <h3>{{ editId !== null ? 'Edit Type' : 'Add Type' }}</h3>
+
+      <div class="form-group">
+        <label>Type Name</label>
+        <input
+          type="text"
+          [(ngModel)]="typeName"
+          name="typeName"
+          [disabled]="isSaving"
+          placeholder="e.g. Smartwatch"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Devices Count</label>
+        <input
+          type="number"
+          [(ngModel)]="countValue"
+          name="countValue"
+          [disabled]="isSaving"
+          min="0"
+          placeholder="e.g. 20"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Icon Select</label>
+
+        <div class="icon-grid">
+          @for (icon of iconOptions; track icon) {
+            <button
+              type="button"
+              class="icon-option"
+              [class.active]="selectedIcon === icon"
+              [disabled]="isSaving"
+              (click)="selectIcon(icon)"
+            >
+              {{ icon }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <button
+        class="primary-btn"
+        type="button"
+        [disabled]="isSaving"
+        (click)="createOrUpdateType()"
+      >
+        @if (isSaving) {
+          Saving...
+        } @else {
+          {{ editId !== null ? 'Save Changes' : 'Create Type' }}
+        }
+      </button>
+
+      @if (editId !== null) {
+        <button
+          class="secondary-btn"
+          type="button"
+          [disabled]="isSaving"
+          (click)="cancelEdit()"
+        >
+          Cancel Edit
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (showToast) {
+    <div class="success-toast" [class.error-toast]="toastType === 'error'">
+      {{ toastMessage }}
+    </div>
+  }
+</section>

@@ -1,0 +1,135 @@
+<section class="assign-page">
+  <div class="page-header">
+    <div class="breadcrumb">Assignments <span>›</span> New Assignment</div>
+    <h1>Assign Device</h1>
+  </div>
+
+  <div class="assign-layout">
+    <div class="card assign-card">
+      <div class="card-header">
+        <div class="step-badge">1</div>
+        <h2>Select User</h2>
+      </div>
+
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="6"></circle>
+          <path d="M20 20l-4.2-4.2"></path>
+        </svg>
+
+        <input
+          type="text"
+          placeholder="Search user name, email, or employee ID..."
+          [(ngModel)]="userSearch"
+          [disabled]="assigning"
+        />
+      </div>
+
+      @if (loadingUsers) {
+        <div class="mini-loader">
+          <div class="mini-spinner"></div>
+          <span>Loading users...</span>
+        </div>
+      } @else {
+        <div class="list-stack">
+          @for (user of filteredUsers; track user.id) {
+            <div
+              class="select-row"
+              [class.selected]="selectedUser?.id === user.id"
+              (click)="selectUser(user)"
+            >
+              <div class="avatar">{{ user.initials }}</div>
+
+              <div class="select-content">
+                <div class="title">{{ user.name }}</div>
+                <div class="sub">{{ user.department || 'No department' }} · {{ user.email }}</div>
+              </div>
+            </div>
+          }
+
+          @if (filteredUsers.length === 0) {
+            <div class="empty-state">No users found.</div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="card assign-card">
+      <div class="card-header">
+        <div class="step-badge">2</div>
+        <h2>Select Device</h2>
+      </div>
+
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="6"></circle>
+          <path d="M20 20l-4.2-4.2"></path>
+        </svg>
+
+        <input
+          type="text"
+          placeholder="Search available devices by IMEI, serial, or model..."
+          [(ngModel)]="deviceSearch"
+          [disabled]="assigning"
+        />
+      </div>
+
+      @if (loadingDevices) {
+        <div class="mini-loader">
+          <div class="mini-spinner"></div>
+          <span>Loading devices...</span>
+        </div>
+      } @else {
+        <div class="list-stack">
+          @for (device of filteredDevices; track device.id) {
+            <div
+              class="select-row device-row"
+              [class.selected]="selectedDevice?.id === device.id"
+              (click)="selectDevice(device)"
+            >
+              <div class="device-icon"></div>
+
+              <div class="select-content">
+                <div class="title">{{ device.name }}</div>
+                <div class="sub">{{ device.code }} · {{ device.type }} · {{ device.model }}</div>
+              </div>
+            </div>
+          }
+
+          @if (filteredDevices.length === 0) {
+            <div class="empty-state">No available devices found.</div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="assign-actions">
+    <button
+      type="button"
+      class="primary-btn"
+      [disabled]="assigning || !selectedUser || !selectedDevice"
+      (click)="assignDevice()"
+    >
+      @if (assigning) {
+        <span class="btn-loader"></span>
+        <span>Assigning...</span>
+      } @else {
+        <span>Assign Device</span>
+      }
+    </button>
+  </div>
+
+  @if (showToast) {
+    <div class="success-toast" [class.error-toast]="toastType === 'error'">
+      {{ toastMessage }}
+    </div>
+  }
+
+  @if (assigning) {
+    <div class="page-loader">
+      <div class="spinner"></div>
+      <span>Assigning device...</span>
+    </div>
+  }
+</section>

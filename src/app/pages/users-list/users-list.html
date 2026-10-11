@@ -1,0 +1,102 @@
+<section class="users-page">
+  <div class="page-header">
+    <h1>Users</h1>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none">
+        <circle cx="11" cy="11" r="6"></circle>
+        <path d="M20 20l-4.2-4.2"></path>
+      </svg>
+
+      <input
+        type="text"
+        placeholder="Search users, email, employee ID..."
+        [(ngModel)]="searchText"
+      />
+    </div>
+
+    <div class="toolbar-actions">
+      <a routerLink="/users/add" class="primary-btn">+ Add User</a>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="center-loader">
+      <div class="spinner"></div>
+      <span>Loading users...</span>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="error-box">{{ errorMessage }}</div>
+  }
+
+  @if (!loading) {
+    <div class="table-card">
+<div class="table-head grid-row">
+  <div>User</div>
+  <div>Employee ID</div>
+  <div>User Domain</div> <!-- ✅ جديد -->
+  <div>Department</div>
+  <div>Job Title</div>
+  <div>Devices</div>
+  <div>Images</div>
+  <div>Actions</div>
+</div>
+
+@for (user of filteredUsers; track user.employeeId) {
+  <div class="table-row grid-row">
+    <div class="user-cell">
+      <span class="avatar">{{ user.initials }}</span>
+
+      <div>
+        <div class="primary">{{ user.name }}</div>
+        <div class="secondary">{{ user.email }}</div>
+      </div>
+    </div>
+
+    <div>{{ user.employeeId }}</div>
+
+    <!-- ✅ العمود الجديد -->
+    <div class="user-domain">
+      {{ user.userDomain || '-' }}
+    </div>
+
+    <div>{{ user.department }}</div>
+    <div>{{ user.title }}</div>
+
+    <div>
+      <span class="device-badge">{{ user.devices }}</span>
+    </div>
+
+    <div>
+      @if (user.imageUrl) {
+        <button
+          type="button"
+          class="user-image-btn"
+          (click)="openImage(user.imageUrl)"
+        >
+          <img [src]="user.imageUrl" class="user-image" />
+        </button>
+      } @else {
+        <span class="image-badge">IMG 0</span>
+      }
+    </div>
+
+    <div class="actions-cell">
+      <a [routerLink]="['/users/edit', user.employeeId]" class="edit-link">
+        Edit
+      </a>
+    </div>
+  </div>
+}
+      @if (filteredUsers.length === 0) {
+        <div class="empty-state">
+          No users found.
+        </div>
+      }
+    </div>
+  }
+</section>
