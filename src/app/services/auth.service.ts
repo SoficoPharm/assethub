@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, timeout } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { EDIT_ROLES, Role, Roles } from '../core/roles';
 
@@ -24,6 +24,9 @@ interface LoginResponse {
 const TOKEN_KEY = 'token';
 const USER_KEY = 'currentUser';
 
+/** Login fails with a TimeoutError if the API does not answer within this time. */
+const LOGIN_TIMEOUT_MS = 10_000;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -43,7 +46,10 @@ export class AuthService {
   login(data: LoginRequest): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(`${this.api}/Auth/login`, data)
-      .pipe(tap(res => this.saveSession(res.token, res.user)));
+      .pipe(
+        timeout(LOGIN_TIMEOUT_MS),
+        tap(res => this.saveSession(res.token, res.user))
+      );
   }
 
   getToken(): string | null {

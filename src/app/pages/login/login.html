@@ -38,7 +38,8 @@
             type="text"
             name="email"
             [(ngModel)]="email"
-            placeholder="admin@assethub.local"
+            (ngModelChange)="clearError()"
+            placeholder="e.g. superadmin"
           />
         </div>
 
@@ -52,6 +53,7 @@
             type="password"
             name="password"
             [(ngModel)]="password"
+            (ngModelChange)="clearError()"
             placeholder="••••••••••"
           />
         </div>
@@ -61,14 +63,9 @@
           <span class="custom-check"></span>
           <span>Remember me for 30 days</span>
         </label>
-        @if (errorMessage) {
-          <div class="error-box">
-            {{ errorMessage }}
-          </div>
-        }
-<button class="sign-in-btn" type="submit" [disabled]="loading">
+<button class="sign-in-btn" type="submit" [disabled]="loading()">
   
-  <ng-container *ngIf="!loading; else loadingTpl">
+  <ng-container *ngIf="!loading(); else loadingTpl">
     <span>Sign In</span>
     <svg viewBox="0 0 24 24" fill="none">
       <path d="M5 12h14"></path>
@@ -81,6 +78,9 @@
   </ng-template>
 
 </button>
+        @if (errorMessage()) {
+          <div class="error-box" role="alert">{{ errorMessage() }}</div>
+        }
       </form>
 
       <div class="help-text">
