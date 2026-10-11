@@ -91,7 +91,8 @@
     minmax(190px, 1.2fr)
     90px
     90px
-    90px;
+    100px
+    170px;
   align-items: center;
   gap: 18px;
 }
@@ -267,6 +268,66 @@
   }
 
   .grid-row {
-    min-width: 1250px;
+    min-width: 1450px;
   }
+}
+.show-inactive {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #344054;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+
+  input {
+    width: 16px;
+    height: 16px;
+    accent-color: #35b77c;
+  }
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+
+  &.active {
+    background: #eaf7f1;
+    color: #169b67;
+  }
+
+  &.inactive {
+    background: #fff4e8;
+    color: #c8781b;
+  }
+}
+
+.inactive-row {
+  color: #98a2b3;
+}
+
+.toggle-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }

@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../core/notification.service';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -15,8 +16,12 @@ import { EmployeeRow, EmployeesService } from '../../services/employees.service'
 })
 export class EmployeesList implements OnInit {
   protected readonly auth = inject(AuthService);
+  private readonly notify = inject(NotificationService);
 
   searchText = '';
+  /** Inactive employees are hidden unless this is ticked. */
+  showInactive = false;
+  togglingId: number | null = null;
   users: EmployeeRow[] = [];
 
   loading = false;
@@ -59,10 +64,34 @@ export class EmployeesList implements OnInit {
     window.open(url, '_blank');
   }
 
+  toggleActive(user: EmployeeRow): void {
+    if (this.togglingId !== null) return;
+
+    const action = user.isActive ? 'Deactivate' : 'Activate';
+    if (!confirm(`${action} ${user.name}?`)) return;
+
+    this.togglingId = user.id;
+
+    this.employeesService.toggleActive(user.id)
+      .pipe(finalize(() => {
+        this.togglingId = null;
+        this.cdr.detectChanges();
+      }))
+      .subscribe({
+        next: res => {
+          user.isActive = res.isActive;
+          this.notify.success(`${user.name} ${res.isActive ? 'activated' : 'deactivated'}`);
+        },
+        error: err => this.notify.apiError(err, `Failed to ${action.toLowerCase()} employee.`)
+      });
+  }
+
   get filteredUsers(): EmployeeRow[] {
     const search = this.searchText.trim().toLowerCase();
 
     return this.users.filter(user => {
+      if (!this.showInactive && !user.isActive) return false;
+
       const name = user.name ?? '';
       const email = user.email ?? '';
       const employeeId = user.employeeId ?? '';

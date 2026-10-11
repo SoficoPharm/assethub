@@ -16,6 +16,7 @@ export interface EmployeeRow {
   initials: string;
   imageUrl?: string;
   userDomain?: string;
+  isActive: boolean;
 }
 
 export interface EmployeeRequest {
@@ -73,6 +74,10 @@ export class EmployeesService {
 
   updateEmployee(id: number, data: EmployeeRequest): Observable<unknown> {
     return this.http.put(`${this.api}/Users/${id}`, this.toFormData(data));
+  }
+
+  toggleActive(id: number): Observable<{ message: string; id: number; isActive: boolean }> {
+    return this.http.put<{ message: string; id: number; isActive: boolean }>(`${this.api}/Users/${id}/toggle-active`, {});
   }
 
   deleteEmployee(id: number): Observable<unknown> {

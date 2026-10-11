@@ -54,7 +54,8 @@ export class AssignDevice implements OnInit {
         this.cdr.detectChanges();
       }))
       .subscribe({
-        next: res => this.users = res ?? [],
+        // Only active employees can receive devices.
+        next: res => this.users = (res ?? []).filter(user => user.isActive),
         error: err => {
           console.error('Assign employees error:', err);
           this.notify.apiError(err, 'Failed to load employees.');

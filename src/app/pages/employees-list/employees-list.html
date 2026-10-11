@@ -18,6 +18,11 @@
     </div>
 
     <div class="toolbar-actions">
+      <label class="show-inactive">
+        <input type="checkbox" name="showInactive" [(ngModel)]="showInactive" />
+        <span>Show inactive</span>
+      </label>
+
       @if (auth.canEdit()) {
         <a routerLink="/employees/add" class="primary-btn">+ Add Employee</a>
       }
@@ -45,11 +50,12 @@
   <div>Job Title</div>
   <div>Devices</div>
   <div>Images</div>
+  <div>Status</div>
   <div>Actions</div>
 </div>
 
 @for (user of filteredUsers; track user.employeeId) {
-  <div class="table-row grid-row">
+  <div class="table-row grid-row" [class.inactive-row]="!user.isActive">
     <div class="user-cell">
       <span class="avatar">{{ user.initials }}</span>
 
@@ -87,11 +93,26 @@
       }
     </div>
 
+    <div>
+      <span class="status-badge" [class.active]="user.isActive" [class.inactive]="!user.isActive">
+        {{ user.isActive ? 'Active' : 'Inactive' }}
+      </span>
+    </div>
+
     <div class="actions-cell">
       @if (auth.canEdit()) {
         <a [routerLink]="['/employees/edit', user.employeeId]" class="edit-link">
           Edit
         </a>
+
+        <button
+          type="button"
+          class="toggle-btn"
+          [disabled]="togglingId !== null"
+          (click)="toggleActive(user)"
+        >
+          {{ togglingId === user.id ? 'Saving...' : (user.isActive ? 'Deactivate' : 'Activate') }}
+        </button>
       }
     </div>
   </div>
