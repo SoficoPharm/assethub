@@ -553,3 +553,11 @@ select.invalid {
   font-size: 14px;
   font-weight: 600;
 }
+
+/* Two small fields sharing one grid column (Number of Screens + Screen Size). */
+.field-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  min-width: 0;
+}

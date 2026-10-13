@@ -26,30 +26,83 @@ export function serialInUseMessage(result: SerialCheckResult): string {
   return `Already used by ${result.deviceCode} - ${result.deviceName}`;
 }
 
-export type HardwareField = 'RAM' | 'Storage' | 'CPU';
+/** Fields whose requirement depends on the device type. Mirrors the API rules. */
+export type RequiredDeviceField = 'Device Type' | 'Serial Number' | 'RAM' | 'Storage' | 'CPU';
 
-/** Device types (case-insensitive) that need RAM, Storage and CPU. Mirrors the API rule. */
+/** Device types (case-insensitive) that need RAM, Storage and CPU. */
 const TYPES_REQUIRING_HARDWARE = ['laptop', 'desktop'];
 
+/** Device types (case-insensitive) that may be saved without a serial number. */
+const TYPES_WITHOUT_SERIAL = ['bag', 'sim line'];
+
+const normalizeType = (deviceType: string | null | undefined) => (deviceType ?? '').trim().toLowerCase();
+
 export function requiresHardware(deviceType: string | null | undefined): boolean {
-  return TYPES_REQUIRING_HARDWARE.includes((deviceType ?? '').trim().toLowerCase());
+  return TYPES_REQUIRING_HARDWARE.includes(normalizeType(deviceType));
 }
 
-/**
- * The hardware fields still empty for a Laptop or Desktop; always [] for other types.
- * `storage` is the value sent as Storage (Storage 1, else Storage 2).
- */
-export function missingHardware(
-  deviceType: string | null | undefined,
-  values: { ram: string | null | undefined; storage: string | null | undefined; cpu: string | null | undefined }
-): HardwareField[] {
-  if (!requiresHardware(deviceType)) return [];
+/** Every type except Bag and SIM Line needs a serial (also while no type is chosen yet). */
+export function requiresSerial(deviceType: string | null | undefined): boolean {
+  return !TYPES_WITHOUT_SERIAL.includes(normalizeType(deviceType));
+}
 
-  const missing: HardwareField[] = [];
-  if (!values.ram?.trim()) missing.push('RAM');
-  if (!values.storage?.trim()) missing.push('Storage');
-  if (!values.cpu?.trim()) missing.push('CPU');
+/** For Laptop/Desktop hardware, "N/A" is not a value. */
+function isRealValue(value: string | null | undefined): boolean {
+  const text = (value ?? '').trim();
+  return !!text && text.toUpperCase() !== 'N/A';
+}
+
+export interface RequiredDeviceValues {
+  deviceType: string | null | undefined;
+  serialNumber: string | null | undefined;
+  ram: string | null | undefined;
+  /** The value sent as Storage (Storage 1, else Storage 2). */
+  storage: string | null | undefined;
+  cpu: string | null | undefined;
+}
+
+/** The required fields that are still empty for this device's type. */
+export function missingDeviceFields(values: RequiredDeviceValues): RequiredDeviceField[] {
+  const missing: RequiredDeviceField[] = [];
+
+  if (!values.deviceType?.trim()) missing.push('Device Type');
+  if (requiresSerial(values.deviceType) && !normalizeSerial(values.serialNumber)) missing.push('Serial Number');
+
+  if (requiresHardware(values.deviceType)) {
+    if (!isRealValue(values.ram)) missing.push('RAM');
+    if (!isRealValue(values.storage)) missing.push('Storage');
+    if (!isRealValue(values.cpu)) missing.push('CPU');
+  }
+
   return missing;
+}
+
+/** Inline error text under a missing required field. */
+export function missingFieldMessage(field: RequiredDeviceField, deviceType: string): string {
+  if (field === 'Device Type') return 'Device Type is required.';
+  if (field === 'Serial Number') return `Serial Number is required for ${deviceType || 'this device type'}.`;
+  return `${field} is required for ${deviceType} (N/A is not accepted).`;
+}
+
+export const MIN_SCREEN_SIZE_INCHES = 7;
+export const MAX_SCREEN_SIZE_INCHES = 100;
+
+/** Same rule as the API: optional; 7–100 with at most one decimal. Returns '' when valid. */
+export function screenSizeError(size: number | null | undefined): string {
+  if (size === null || size === undefined || (size as unknown) === '') return '';
+  if (!Number.isFinite(size)) return 'Enter a number, e.g. 15.6.';
+  if (size < MIN_SCREEN_SIZE_INCHES || size > MAX_SCREEN_SIZE_INCHES) {
+    return `Screen size must be between ${MIN_SCREEN_SIZE_INCHES} and ${MAX_SCREEN_SIZE_INCHES} inches.`;
+  }
+  if (Math.round(size * 10) / 10 !== size) return 'Use at most one decimal, e.g. 15.6.';
+  return '';
+}
+
+/** Reads a screen size from a system-info file value like 15.6, "15.6" or '15.6"'. */
+export function parseScreenSize(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') return null;
+  const size = typeof value === 'number' ? value : parseFloat(String(value));
+  return Number.isFinite(size) ? size : null;
 }
 
 export interface DeviceRow {
@@ -71,6 +124,7 @@ export interface DeviceRow {
   cpu?: string;
   gpu?: string;
   screens?: number | null;
+  screenSizeInches?: number | null;
   printer?: boolean;
   scanner?: boolean;
 
@@ -101,6 +155,7 @@ export interface CreateDeviceRequest {
   cpu?: string;
   gpu?: string;
   screens?: number | null;
+  screenSizeInches?: number | null;
   printer?: boolean;
   scanner?: boolean;
 
@@ -137,6 +192,7 @@ export class DevicesService {
     formData.append('Cpu', data.cpu ?? '');
     formData.append('Gpu', data.gpu ?? '');
     formData.append('Screens', data.screens === null || data.screens === undefined ? '' : String(data.screens));
+    formData.append('ScreenSizeInches', data.screenSizeInches === null || data.screenSizeInches === undefined ? '' : String(data.screenSizeInches));
     formData.append('Printer', String(data.printer ?? false));
     formData.append('Scanner', String(data.scanner ?? false));
 

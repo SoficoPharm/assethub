@@ -154,6 +154,22 @@ export class DevicesList implements OnInit {
     return (status || '').toLowerCase();
   }
 
+  /** e.g. 15.6" (or '' when unknown). */
+  formatScreenSize(device: DeviceRow): string {
+    return device.screenSizeInches ? `${device.screenSizeInches}"` : '';
+  }
+
+  /** Hover text on the Model cell: the specs that are filled in. */
+  specsTooltip(device: DeviceRow): string {
+    return [
+      device.cpu ? `CPU: ${device.cpu}` : '',
+      device.ram ? `RAM: ${device.ram}` : '',
+      device.storage ? `Storage: ${device.storage}` : '',
+      device.screenSizeInches ? `Screen size: ${this.formatScreenSize(device)}` : '',
+      device.screens ? `Number of screens: ${device.screens}` : ''
+    ].filter(Boolean).join('\n');
+  }
+
   getDeviceInitial(device: DeviceRow): string {
     const type = device.type || device.name || 'D';
     return type.charAt(0).toUpperCase();

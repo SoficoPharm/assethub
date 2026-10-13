@@ -122,7 +122,12 @@
             {{ device.type }}
           </div>
 
-          <div class="col-model">{{ device.model }}</div>
+          <div class="col-model" [title]="specsTooltip(device)">
+            <div>{{ device.model }}</div>
+            @if (device.screenSizeInches) {
+              <div class="secondary">{{ formatScreenSize(device) }} screen</div>
+            }
+          </div>
 
           <div class="col-status">
             <span class="status-badge" [ngClass]="getStatusClass(device.status)">

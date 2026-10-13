@@ -499,3 +499,11 @@ select.invalid {
   border-color: #dc2626 !important;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
 }
+
+/* Two small fields sharing one grid column (Number of Screens + Screen Size). */
+.field-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  min-width: 0;
+}

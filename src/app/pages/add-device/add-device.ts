@@ -9,10 +9,14 @@ import {
   DeviceStatus,
   DevicesService,
   EDITABLE_DEVICE_STATUSES,
-  HardwareField,
-  missingHardware,
+  RequiredDeviceField,
+  missingDeviceFields,
+  missingFieldMessage,
   normalizeSerial,
+  parseScreenSize,
   requiresHardware,
+  requiresSerial,
+  screenSizeError,
   serialInUseMessage
 } from '../../services/devices.service';
 
@@ -29,6 +33,7 @@ interface DeviceForm {
   cpu: string;
   gpu: string;
   screens: number | null;
+  screenSizeInches: number | null;
   printer: boolean;
   scanner: boolean;
   initialStatus: DeviceStatus;
@@ -45,8 +50,8 @@ interface DeviceForm {
   /** Error returned when this device failed to save (e.g. 409). */
   saveError: string;
   checkingSerial: boolean;
-  /** Set after a save attempt or a system-info import: missing required hardware is highlighted. */
-  showHardwareErrors: boolean;
+  /** Set after a save attempt or a system-info import: missing required fields are highlighted. */
+  showRequiredErrors: boolean;
 }
 
 @Component({
@@ -101,6 +106,7 @@ export class AddDevice {
       cpu: '',
       gpu: '',
       screens: null,
+      screenSizeInches: null,
       printer: false,
       scanner: false,
       initialStatus: 'Available',
@@ -113,25 +119,45 @@ export class AddDevice {
       batchError: '',
       saveError: '',
       checkingSerial: false,
-      showHardwareErrors: false
+      showRequiredErrors: false
     };
   }
 
-  /** Laptop and Desktop need RAM, Storage and CPU. */
+  /** Laptop and Desktop need RAM, Storage and CPU (not N/A). */
   requiresHardware(device: DeviceForm): boolean {
     return requiresHardware(device.deviceType);
   }
 
-  missingHardware(device: DeviceForm): HardwareField[] {
-    return missingHardware(device.deviceType, {
+  /** Every type except Bag and SIM Line needs a serial. */
+  requiresSerial(device: DeviceForm): boolean {
+    return requiresSerial(device.deviceType);
+  }
+
+  missingFields(device: DeviceForm): RequiredDeviceField[] {
+    return missingDeviceFields({
+      deviceType: device.deviceType,
+      serialNumber: device.serialNumber,
       ram: device.ram,
       storage: device.storage1 || device.storage2,
       cpu: device.cpu
     });
   }
 
-  isMissing(device: DeviceForm, field: HardwareField): boolean {
-    return device.showHardwareErrors && this.missingHardware(device).includes(field);
+  isMissing(device: DeviceForm, field: RequiredDeviceField): boolean {
+    return device.showRequiredErrors && this.missingFields(device).includes(field);
+  }
+
+  missingMessage(device: DeviceForm, field: RequiredDeviceField): string {
+    return missingFieldMessage(field, device.deviceType);
+  }
+
+  screenSizeError(device: DeviceForm): string {
+    return screenSizeError(device.screenSizeInches);
+  }
+
+  /** Card outline: a save error, a highlighted missing field or an invalid screen size. */
+  hasFieldErrors(device: DeviceForm): boolean {
+    return (device.showRequiredErrors && this.missingFields(device).length > 0) || !!this.screenSizeError(device);
   }
 
   openScanFile(index: number): void {
@@ -174,6 +200,7 @@ export class AddDevice {
         }
 
         device.screens = Number(data.screens) || device.screens;
+        device.screenSizeInches = parseScreenSize(data.screenSizeInches ?? data.screenSize) ?? device.screenSizeInches;
         device.printer = Boolean(data.printer);
         device.scanner = Boolean(data.scanner);
 
@@ -194,8 +221,8 @@ export class AddDevice {
         ].filter(Boolean).join('\n');
 
         // Show right away which required fields the file did not fill.
-        device.showHardwareErrors = true;
-        const missing = this.missingHardware(device);
+        device.showRequiredErrors = true;
+        const missing = this.missingFields(device);
 
         if (missing.length) {
           this.notify.error(`System info loaded, but ${missing.join(', ')} ${missing.length === 1 ? 'is' : 'are'} still required for ${device.deviceType}.`);
@@ -349,16 +376,23 @@ export class AddDevice {
       return;
     }
 
-    this.devicesToAdd.forEach(d => (d.showHardwareErrors = true));
+    this.devicesToAdd.forEach(d => (d.showRequiredErrors = true));
     const incomplete = this.devicesToAdd
-      .map((device, i) => ({ i, device, missing: this.missingHardware(device) }))
+      .map((device, i) => ({ i, device, missing: this.missingFields(device) }))
       .filter(x => x.missing.length);
 
     if (incomplete.length) {
       const { i, device, missing } = incomplete[0];
+      const label = device.deviceType ? ` (${device.deviceType})` : '';
       const more = incomplete.length > 1 ? ` (and ${incomplete.length - 1} more device(s))` : '';
-      this.notify.error(`Device #${i + 1} (${device.deviceType}): ${missing.join(', ')} required${more}.`);
+      this.notify.error(`Device #${i + 1}${label}: ${missing.join(', ')} required${more}.`);
       this.cdr.detectChanges();
+      return;
+    }
+
+    const badSize = this.devicesToAdd.findIndex(d => this.screenSizeError(d));
+    if (badSize >= 0) {
+      this.notify.error(`Device #${badSize + 1}: ${this.screenSizeError(this.devicesToAdd[badSize])}`);
       return;
     }
 
@@ -427,7 +461,7 @@ export class AddDevice {
       deviceName: device.deviceName.trim(),
       imeiSerial: device.imeiSerial?.trim() || '',
       serialNumber: normalizeSerial(device.serialNumber),
-      deviceType: device.deviceType || 'N/A',
+      deviceType: device.deviceType,
       platform: device.deviceType || 'N/A',
       brand: device.brand || '',
       model: device.model || 'N/A',
@@ -438,6 +472,7 @@ export class AddDevice {
       cpu: device.cpu || '',
       gpu: device.gpu || '',
       screens: device.screens,
+      screenSizeInches: device.screenSizeInches,
       printer: device.printer,
       scanner: device.scanner,
       status: device.initialStatus || 'Available',

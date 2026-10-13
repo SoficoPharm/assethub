@@ -72,15 +72,18 @@
           </div>
 
           <div class="form-group">
-            <label>Serial Number</label>
+            <label>Serial Number @if (requiresSerial) { <span>*</span> }</label>
             <input
               type="text"
               name="serialNumber"
               [(ngModel)]="serialNumber"
               (ngModelChange)="onSerialInput()"
               (blur)="checkSerial()"
-              [class.invalid]="serialError"
+              [class.invalid]="serialError || isMissing('Serial Number')"
             />
+            @if (isMissing('Serial Number')) {
+              <div class="field-error" role="alert">{{ missingMessage('Serial Number') }}</div>
+            }
             @if (checkingSerial) {
               <div class="field-hint">Checking serial number...</div>
             }
@@ -104,10 +107,11 @@
 
         <div class="grid two-cols">
           <div class="form-group">
-            <label>Device Type</label>
+            <label>Device Type <span>*</span></label>
 
             <div class="select-add-row">
-              <select name="deviceType" [(ngModel)]="deviceType">
+              <select name="deviceType" [(ngModel)]="deviceType" [class.invalid]="isMissing('Device Type')">
+                <option value="">Select type</option>
                 @for (item of deviceTypes; track item) {
                   <option [value]="item">{{ item }}</option>
                 }
@@ -117,6 +121,10 @@
                 + Add
               </button>
             </div>
+
+            @if (isMissing('Device Type')) {
+              <div class="field-error" role="alert">{{ missingMessage('Device Type') }}</div>
+            }
 
             @if (showAddType) {
               <div class="inline-add-box">
@@ -191,7 +199,7 @@
             }
 
             @if (isMissing('RAM')) {
-              <div class="field-error" role="alert">RAM is required for {{ deviceType }}.</div>
+              <div class="field-error" role="alert">{{ missingMessage('RAM') }}</div>
             }
           </div>
 
@@ -199,7 +207,7 @@
             <label>Storage 1 @if (requiresHardware) { <span>*</span> }</label>
             <input type="text" name="storage1" [(ngModel)]="storage1" [class.invalid]="isMissing('Storage')" />
             @if (isMissing('Storage')) {
-              <div class="field-error" role="alert">Storage is required for {{ deviceType }}.</div>
+              <div class="field-error" role="alert">{{ missingMessage('Storage') }}</div>
             }
           </div>
         </div>
@@ -210,9 +218,20 @@
             <input type="text" name="storage2" [(ngModel)]="storage2" />
           </div>
 
-          <div class="form-group">
-            <label>Screens</label>
-            <input type="number" min="0" name="screens" [(ngModel)]="screens" />
+          <div class="field-pair">
+            <div class="form-group">
+              <label>Number of Screens</label>
+              <input type="number" min="0" name="screens" [(ngModel)]="screens" placeholder="e.g. 2" />
+            </div>
+
+            <div class="form-group">
+              <label>Screen Size (inches)</label>
+              <input type="number" min="7" max="100" step="0.1" name="screenSizeInches" [(ngModel)]="screenSizeInches"
+                     [class.invalid]="screenSizeError" placeholder="e.g. 15.6" />
+              @if (screenSizeError) {
+                <div class="field-error" role="alert">{{ screenSizeError }}</div>
+              }
+            </div>
           </div>
         </div>
 
@@ -221,7 +240,7 @@
             <label>CPU @if (requiresHardware) { <span>*</span> }</label>
             <input type="text" name="cpu" [(ngModel)]="cpu" [class.invalid]="isMissing('CPU')" />
             @if (isMissing('CPU')) {
-              <div class="field-error" role="alert">CPU is required for {{ deviceType }}.</div>
+              <div class="field-error" role="alert">{{ missingMessage('CPU') }}</div>
             }
           </div>
 
