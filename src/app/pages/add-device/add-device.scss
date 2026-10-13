@@ -533,7 +533,8 @@ button:disabled {
   font-size: 13px;
 }
 
-input.invalid {
+input.invalid,
+select.invalid {
   border-color: #dc2626 !important;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
 }

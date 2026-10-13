@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
-import { EmployeesService } from '../../services/employees.service';
+import { EmployeesService, emailFormatError } from '../../services/employees.service';
 import { DepartmentsService } from '../../services/departments.service';
 
 @Component({
@@ -20,6 +20,7 @@ export class AddEmployee implements OnInit {
 
   fullName = '';
   email = '';
+  emailError = '';
   employeeId = '';
   department = '';
   jobTitle = '';
@@ -61,8 +62,14 @@ export class AddEmployee implements OnInit {
   saveEmployee(): void {
     if (this.saving) return;
 
-    if (!this.fullName.trim() || !this.email.trim()) {
-      this.notify.error('Please enter full name and email.');
+    if (!this.fullName.trim()) {
+      this.notify.error('Please enter the full name.');
+      return;
+    }
+
+    this.checkEmail();
+    if (this.emailError) {
+      this.notify.error(this.emailError);
       return;
     }
 
@@ -90,6 +97,10 @@ export class AddEmployee implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  checkEmail(): void {
+    this.emailError = emailFormatError(this.email);
   }
 
   cancel(): void {

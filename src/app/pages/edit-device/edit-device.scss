@@ -281,6 +281,7 @@
 .right-actions {
   display: flex;
   gap: 12px;
+  margin-left: auto; // stays right when the delete button is hidden (SupportIT)
 }
 
 .danger-link {
@@ -453,6 +454,7 @@ button:disabled {
 
   .right-actions {
     flex-direction: column;
+    margin-left: 0;
   }
 }
 .checkbox-row {
@@ -492,7 +494,8 @@ button:disabled {
   font-size: 13px;
 }
 
-input.invalid {
+input.invalid,
+select.invalid {
   border-color: #dc2626 !important;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
 }

@@ -41,7 +41,8 @@ describe('EditDevice serial numbers', () => {
     fixture.detectChanges();
     http.expectOne(DEVICE_URL).flush({
       id: 1002, name: 'Spare laptop', code: 'DEV-0003', serialNumber: 'OWN-SERIAL', status: 'Available',
-      type: 'Laptop', platform: 'Windows', brand: 'Dell', model: 'Latitude', assignedUser: '—'
+      type: 'Laptop', platform: 'Windows', brand: 'Dell', model: 'Latitude', assignedUser: '—',
+      ram: '16 GB', storage1: '512 GB', cpu: 'Intel Core i7'
     });
     await fixture.whenStable();
   });
@@ -87,5 +88,77 @@ describe('EditDevice serial numbers', () => {
 
     expect(notify.toast()?.message).toBe('Serial number OWN-SERIAL already exists on device DEV-0002 (HQ-DEV-SAP-GJAM)');
     expect(fieldError()).toBe('Already used by DEV-0002 - HQ-DEV-SAP-GJAM');
+  });
+});
+
+describe('EditDevice required hardware and delete permission', () => {
+  let fixture: ComponentFixture<EditDevice>;
+  let http: HttpTestingController;
+  let notify: NotificationService;
+  let el: HTMLElement;
+
+  const fieldErrors = () => Array.from(el.querySelectorAll('.field-error')).map(e => e.textContent!.trim());
+  const deleteButton = () => Array.from(el.querySelectorAll('button')).find(b => b.textContent!.includes('Delete Device'));
+
+  async function setup(role: string, device: Record<string, unknown>) {
+    localStorage.setItem('currentUser', JSON.stringify({ id: 1, fullName: 'Test', userName: 'test', role }));
+
+    await TestBed.configureTestingModule({
+      imports: [EditDevice],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ code: 'DEV-0003' }) } } }
+      ]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(EditDevice);
+    el = fixture.nativeElement;
+    http = TestBed.inject(HttpTestingController);
+    notify = TestBed.inject(NotificationService);
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    fixture.detectChanges();
+    http.expectOne(DEVICE_URL).flush({
+      id: 1002, name: 'Old laptop', code: 'DEV-0003', status: 'Available', platform: 'Windows', assignedUser: '—', ...device
+    });
+    await fixture.whenStable();
+  }
+
+  afterEach(() => {
+    http.verify();
+    localStorage.removeItem('currentUser');
+  });
+
+  it('blocks Save for an existing Laptop without CPU and highlights the field', async () => {
+    await setup('Admin', { type: 'Laptop', ram: '8 GB', storage1: '256 GB', cpu: '' });
+
+    el.querySelector<HTMLButtonElement>('button.primary-btn')!.click();
+    await fixture.whenStable();
+
+    http.expectNone(DEVICE_URL);
+    expect(fieldErrors()).toEqual(['CPU is required for Laptop.']);
+    expect(el.querySelector('input[name="cpu"]')!.classList).toContain('invalid');
+    expect(notify.toast()?.message).toBe('CPU is required for Laptop.');
+  });
+
+  it('saves a Bag without CPU, RAM or Storage', async () => {
+    await setup('Admin', { type: 'Bag' });
+
+    el.querySelector<HTMLButtonElement>('button.primary-btn')!.click();
+
+    http.expectOne(DEVICE_URL).flush({ message: 'ok' });
+    expect(fieldErrors()).toEqual([]);
+  });
+
+  it('hides Delete Device for SupportIT', async () => {
+    await setup('SupportIT', { type: 'Bag' });
+    expect(deleteButton()).toBeUndefined();
+  });
+
+  it('shows Delete Device for Admin', async () => {
+    await setup('Admin', { type: 'Bag' });
+    expect(deleteButton()).toBeDefined();
   });
 });

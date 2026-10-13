@@ -1,10 +1,11 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { NotificationService } from '../../core/notification.service';
+import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs';
-import { EmployeesService } from '../../services/employees.service';
+import { EmployeesService, emailFormatError } from '../../services/employees.service';
 import { DepartmentsService } from '../../services/departments.service';
 
 @Component({
@@ -16,6 +17,7 @@ import { DepartmentsService } from '../../services/departments.service';
 })
 export class EditEmployee implements OnInit {
   private readonly notify = inject(NotificationService);
+  readonly auth = inject(AuthService);
   private readonly departmentsService = inject(DepartmentsService);
 
   userId = 0;
@@ -23,6 +25,7 @@ export class EditEmployee implements OnInit {
 
   fullName = '';
   email = '';
+  emailError = '';
   employeeId = '';
   userDomain = '';
   department = '';
@@ -93,8 +96,14 @@ export class EditEmployee implements OnInit {
   }
 
   saveChanges(): void {
-    if (!this.fullName.trim() || !this.email.trim()) {
-      this.notify.error('Please enter full name and email.');
+    if (!this.fullName.trim()) {
+      this.notify.error('Please enter the full name.');
+      return;
+    }
+
+    this.checkEmail();
+    if (this.emailError) {
+      this.notify.error(this.emailError);
       return;
     }
 
@@ -125,6 +134,10 @@ export class EditEmployee implements OnInit {
           this.notify.apiError(err, 'Failed to update employee.');
         }
       });
+  }
+
+  checkEmail(): void {
+    this.emailError = emailFormatError(this.email);
   }
 
   deleteEmployee(): void {

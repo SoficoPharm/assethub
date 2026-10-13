@@ -293,6 +293,7 @@ select:disabled {
 .right-actions {
   display: flex;
   gap: 12px;
+  margin-left: auto; // stays right when the delete button is hidden (SupportIT)
 }
 
 .danger-link {
@@ -489,5 +490,17 @@ select:disabled {
 
   .right-actions {
     flex-direction: column;
+    margin-left: 0;
   }
+}
+.field-error {
+  margin-top: 6px;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+input.invalid {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
 }

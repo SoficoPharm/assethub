@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, signal } from '@angular/core';
 import { Observable, tap, timeout } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { EDIT_ROLES, Role, Roles } from '../core/roles';
+import { DELETE_ROLES, EDIT_ROLES, Role, Roles } from '../core/roles';
 
 export interface LoginRequest {
   userName: string;
@@ -39,6 +39,7 @@ export class AuthService {
   readonly currentUser = this.user.asReadonly();
 
   readonly canEditSignal = computed(() => this.hasRole(...EDIT_ROLES));
+  readonly canDeleteSignal = computed(() => this.hasRole(...DELETE_ROLES));
   readonly isSuperAdminSignal = computed(() => this.hasRole(Roles.SuperAdmin));
 
   constructor(private readonly http: HttpClient) {}
@@ -68,6 +69,10 @@ export class AuthService {
 
   canEdit(): boolean {
     return this.canEditSignal();
+  }
+
+  canDelete(): boolean {
+    return this.canDeleteSignal();
   }
 
   isSuperAdmin(): boolean {

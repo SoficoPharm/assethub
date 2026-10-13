@@ -9,7 +9,10 @@ import {
   DeviceStatus,
   DevicesService,
   EDITABLE_DEVICE_STATUSES,
+  HardwareField,
+  missingHardware,
   normalizeSerial,
+  requiresHardware,
   serialInUseMessage
 } from '../../services/devices.service';
 
@@ -42,6 +45,8 @@ interface DeviceForm {
   /** Error returned when this device failed to save (e.g. 409). */
   saveError: string;
   checkingSerial: boolean;
+  /** Set after a save attempt or a system-info import: missing required hardware is highlighted. */
+  showHardwareErrors: boolean;
 }
 
 @Component({
@@ -107,8 +112,26 @@ export class AddDevice {
       serialError: '',
       batchError: '',
       saveError: '',
-      checkingSerial: false
+      checkingSerial: false,
+      showHardwareErrors: false
     };
+  }
+
+  /** Laptop and Desktop need RAM, Storage and CPU. */
+  requiresHardware(device: DeviceForm): boolean {
+    return requiresHardware(device.deviceType);
+  }
+
+  missingHardware(device: DeviceForm): HardwareField[] {
+    return missingHardware(device.deviceType, {
+      ram: device.ram,
+      storage: device.storage1 || device.storage2,
+      cpu: device.cpu
+    });
+  }
+
+  isMissing(device: DeviceForm, field: HardwareField): boolean {
+    return device.showHardwareErrors && this.missingHardware(device).includes(field);
   }
 
   openScanFile(index: number): void {
@@ -170,7 +193,15 @@ export class AddDevice {
           ipv4Text ? `IPv4: ${ipv4Text}` : ''
         ].filter(Boolean).join('\n');
 
-        this.notify.success('System info loaded successfully');
+        // Show right away which required fields the file did not fill.
+        device.showHardwareErrors = true;
+        const missing = this.missingHardware(device);
+
+        if (missing.length) {
+          this.notify.error(`System info loaded, but ${missing.join(', ')} ${missing.length === 1 ? 'is' : 'are'} still required for ${device.deviceType}.`);
+        } else {
+          this.notify.success('System info loaded successfully');
+        }
       } catch {
         this.notify.error('Invalid JSON file.');
       }
@@ -315,6 +346,19 @@ export class AddDevice {
 
     if (invalid) {
       this.notify.error('Please enter device name.');
+      return;
+    }
+
+    this.devicesToAdd.forEach(d => (d.showHardwareErrors = true));
+    const incomplete = this.devicesToAdd
+      .map((device, i) => ({ i, device, missing: this.missingHardware(device) }))
+      .filter(x => x.missing.length);
+
+    if (incomplete.length) {
+      const { i, device, missing } = incomplete[0];
+      const more = incomplete.length > 1 ? ` (and ${incomplete.length - 1} more device(s))` : '';
+      this.notify.error(`Device #${i + 1} (${device.deviceType}): ${missing.join(', ')} required${more}.`);
+      this.cdr.detectChanges();
       return;
     }
 
