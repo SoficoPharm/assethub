@@ -27,6 +27,8 @@ export class EditEmployee implements OnInit {
   email = '';
   emailError = '';
   employeeId = '';
+  /** "Required" before saving, or the API's 409 duplicate message. */
+  employeeIdError = '';
   userDomain = '';
   department = '';
   jobTitle = '';
@@ -101,6 +103,13 @@ export class EditEmployee implements OnInit {
       return;
     }
 
+    if (!this.employeeId.trim()) {
+      this.employeeIdError = 'Employee ID is required.';
+      this.notify.error(this.employeeIdError);
+      this.cdr.detectChanges();
+      return;
+    }
+
     this.checkEmail();
     if (this.emailError) {
       this.notify.error(this.emailError);
@@ -132,6 +141,7 @@ export class EditEmployee implements OnInit {
         error: (err) => {
           console.error(err);
           this.notify.apiError(err, 'Failed to update employee.');
+          if (err?.status === 409) this.employeeIdError = this.notify.getErrorMessage(err, 'This Employee ID already exists.');
         }
       });
   }

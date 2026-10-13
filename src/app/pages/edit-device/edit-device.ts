@@ -9,10 +9,13 @@ import {
   DeviceStatus,
   DevicesService,
   EDITABLE_DEVICE_STATUSES,
-  HardwareField,
-  missingHardware,
+  RequiredDeviceField,
+  missingDeviceFields,
+  missingFieldMessage,
   normalizeSerial,
   requiresHardware,
+  requiresSerial,
+  screenSizeError,
   serialInUseMessage
 } from '../../services/devices.service';
 
@@ -42,6 +45,7 @@ export class EditDevice implements OnInit {
   cpu = '';
   gpu = '';
   screens: number | null = null;
+  screenSizeInches: number | null = null;
   printer = false;
   scanner = false;
   status: DeviceStatus = 'Available';
@@ -63,8 +67,8 @@ export class EditDevice implements OnInit {
   serialError = '';
   checkingSerial = false;
 
-  /** Set after a save attempt: missing required hardware is highlighted. */
-  showHardwareErrors = false;
+  /** Set after a save attempt: missing required fields are highlighted. */
+  showRequiredErrors = false;
 
   deviceTypes = ['Laptop', 'Mobile', 'Tablet', 'Desktop', 'Bag', 'SIM Line'];
   brands = ['Apple', 'Samsung', 'Lenovo', 'Dell', 'HP', 'Vodafone', 'Orange', 'Etisalat'];
@@ -95,21 +99,36 @@ export class EditDevice implements OnInit {
       : EDITABLE_DEVICE_STATUSES;
   }
 
-  /** Laptop and Desktop need RAM, Storage and CPU. */
+  /** Laptop and Desktop need RAM, Storage and CPU (not N/A). */
   get requiresHardware(): boolean {
     return requiresHardware(this.deviceType);
   }
 
-  get missingHardware(): HardwareField[] {
-    return missingHardware(this.deviceType, {
+  /** Every type except Bag and SIM Line needs a serial. */
+  get requiresSerial(): boolean {
+    return requiresSerial(this.deviceType);
+  }
+
+  get missingFields(): RequiredDeviceField[] {
+    return missingDeviceFields({
+      deviceType: this.deviceType,
+      serialNumber: this.serialNumber,
       ram: this.ram,
       storage: this.storage1 || this.storage2,
       cpu: this.cpu
     });
   }
 
-  isMissing(field: HardwareField): boolean {
-    return this.showHardwareErrors && this.missingHardware.includes(field);
+  isMissing(field: RequiredDeviceField): boolean {
+    return this.showRequiredErrors && this.missingFields.includes(field);
+  }
+
+  missingMessage(field: RequiredDeviceField): string {
+    return missingFieldMessage(field, this.deviceType);
+  }
+
+  get screenSizeError(): string {
+    return screenSizeError(this.screenSizeInches);
   }
 
   onSerialInput(): void {
@@ -186,6 +205,7 @@ export class EditDevice implements OnInit {
           this.cpu = device.cpu || '';
           this.gpu = device.gpu || '';
           this.screens = device.screens ?? null;
+          this.screenSizeInches = device.screenSizeInches ?? null;
           this.printer = !!device.printer;
           this.scanner = !!device.scanner;
           this.notes = device.notes || '';
@@ -243,11 +263,17 @@ export class EditDevice implements OnInit {
       return;
     }
 
-    this.showHardwareErrors = true;
-    const missing = this.missingHardware;
+    this.showRequiredErrors = true;
+    const missing = this.missingFields;
     if (missing.length) {
-      this.notify.error(`${missing.join(', ')} ${missing.length === 1 ? 'is' : 'are'} required for ${this.deviceType}.`);
+      const forType = this.deviceType ? ` for ${this.deviceType}` : '';
+      this.notify.error(`${missing.join(', ')} ${missing.length === 1 ? 'is' : 'are'} required${forType}.`);
       this.cdr.detectChanges();
+      return;
+    }
+
+    if (this.screenSizeError) {
+      this.notify.error(this.screenSizeError);
       return;
     }
 
@@ -270,7 +296,7 @@ export class EditDevice implements OnInit {
       deviceName: this.deviceName.trim(),
       imeiSerial: this.imeiSerial.trim(),
       serialNumber: normalizeSerial(this.serialNumber),
-      deviceType: this.deviceType || 'N/A',
+      deviceType: this.deviceType,
       platform: this.platform || this.deviceType || 'N/A',
       brand: this.brand || '',
       model: this.model || 'N/A',
@@ -281,6 +307,7 @@ export class EditDevice implements OnInit {
       cpu: this.cpu.trim(),
       gpu: this.gpu.trim(),
       screens: this.screens,
+      screenSizeInches: this.screenSizeInches,
       printer: this.printer,
       scanner: this.scanner,
       status: this.status,

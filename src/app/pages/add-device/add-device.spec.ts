@@ -96,6 +96,8 @@ describe('AddDevice serial numbers', () => {
     type(serialInputs()[2], 'ABC-1 ');
     await fixture.whenStable();
 
+    // Device Type is required; Mobile also needs the serial these tests are about.
+    component.devicesToAdd.forEach(d => (d.deviceType = 'Mobile'));
     component.saveDevices();
 
     http.expectNone(DEVICES_URL);
@@ -111,6 +113,8 @@ describe('AddDevice serial numbers', () => {
     serialInputs().forEach((input, i) => type(input, `SN-${i + 1}`));
     await fixture.whenStable();
 
+    // Device Type is required; Mobile also needs the serial these tests are about.
+    component.devicesToAdd.forEach(d => (d.deviceType = 'Mobile'));
     component.saveDevices();
 
     // Sequential: the second request is only sent after the first answers.
@@ -139,6 +143,8 @@ describe('AddDevice serial numbers', () => {
     type(serialInputs()[0], ' cl7wnl3 ');
     await fixture.whenStable();
 
+    // Device Type is required; Mobile also needs the serial these tests are about.
+    component.devicesToAdd.forEach(d => (d.deviceType = 'Mobile'));
     component.saveDevices();
 
     const req = http.expectOne(DEVICES_URL);
@@ -224,13 +230,13 @@ describe('AddDevice required hardware (Laptop / Desktop)', () => {
   });
 
   it('blocks Save for a Laptop without CPU and highlights the field', async () => {
-    fill(0, { deviceName: 'HQ laptop', deviceType: 'Laptop', ram: '16 GB', storage1: '512 GB', cpu: '  ' });
+    fill(0, { deviceName: 'HQ laptop', serialNumber: 'SN-L1', deviceType: 'Laptop', ram: '16 GB', storage1: '512 GB', cpu: '  ' });
 
     component.saveDevices();
     await render();
 
     http.expectNone(`${environment.apiUrl}/Devices`);
-    expect(fieldErrors(cards()[0])).toEqual(['CPU is required for Laptop.']);
+    expect(fieldErrors(cards()[0])).toEqual(['CPU is required for Laptop (N/A is not accepted).']);
     expect(invalidPlaceholders(cards()[0])).toEqual(['e.g. Intel Core i7']);
     expect(cards()[0].classList).toContain('has-error');
     expect(notify.toast()?.message).toBe('Device #1 (Laptop): CPU required.');
@@ -240,15 +246,15 @@ describe('AddDevice required hardware (Laptop / Desktop)', () => {
     component.addAnotherDevice();
     component.addAnotherDevice();
     fill(0, { deviceName: 'Bag', deviceType: 'Bag' });
-    fill(1, { deviceName: 'Desk', deviceType: 'desktop', cpu: 'i5' });
-    fill(2, { deviceName: 'Lap', deviceType: 'Laptop', ram: '8 GB', storage1: '256 GB', cpu: 'i7' });
+    fill(1, { deviceName: 'Desk', serialNumber: 'SN-D1', deviceType: 'desktop', cpu: 'i5' });
+    fill(2, { deviceName: 'Lap', serialNumber: 'SN-L2', deviceType: 'Laptop', ram: '8 GB', storage1: '256 GB', cpu: 'i7' });
 
     component.saveDevices();
     await render();
 
     http.expectNone(`${environment.apiUrl}/Devices`);
     expect(fieldErrors(cards()[0])).toEqual([]);
-    expect(fieldErrors(cards()[1])).toEqual(['RAM is required for desktop.', 'Storage is required for desktop.']);
+    expect(fieldErrors(cards()[1])).toEqual(['RAM is required for desktop (N/A is not accepted).', 'Storage is required for desktop (N/A is not accepted).']);
     expect(fieldErrors(cards()[2])).toEqual([]);
     expect(notify.toast()?.message).toBe('Device #2 (desktop): RAM, Storage required.');
 
@@ -278,7 +284,137 @@ describe('AddDevice required hardware (Laptop / Desktop)', () => {
     await vi.waitFor(() => expect(component.devicesToAdd[0].deviceType).toBe('Laptop'));
     await render();
 
-    expect(fieldErrors(cards()[0])).toEqual(['CPU is required for Laptop.']);
-    expect(notify.toast()?.message).toBe('System info loaded, but CPU is still required for Laptop.');
+    expect(fieldErrors(cards()[0])).toEqual(['Serial Number is required for Laptop.', 'CPU is required for Laptop (N/A is not accepted).']);
+    expect(notify.toast()?.message).toBe('System info loaded, but Serial Number, CPU are still required for Laptop.');
+  });
+});
+
+describe('AddDevice required type and serial, N/A and screen size', () => {
+  let fixture: ComponentFixture<AddDevice>;
+  let component: AddDevice;
+  let http: HttpTestingController;
+  let notify: NotificationService;
+  let el: HTMLElement;
+
+  const card = () => el.querySelector<HTMLElement>('.device-card')!;
+  const fieldErrors = () => Array.from(card().querySelectorAll('.field-error')).map(e => e.textContent!.trim());
+  const labelText = (start: string) =>
+    Array.from(card().querySelectorAll('label')).map(l => l.textContent!.trim()).find(t => t.startsWith(start));
+  const fill = (values: Partial<AddDevice['devicesToAdd'][number]>) => Object.assign(component.devicesToAdd[0], values);
+
+  async function render() {
+    fixture.changeDetectorRef.detectChanges();
+    await fixture.whenStable();
+  }
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [AddDevice],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(AddDevice);
+    component = fixture.componentInstance;
+    el = fixture.nativeElement;
+    http = TestBed.inject(HttpTestingController);
+    notify = TestBed.inject(NotificationService);
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    await fixture.whenStable();
+  });
+
+  afterEach(() => http.verify());
+
+  it('always marks Device Type as required and blocks Save without it', async () => {
+    fill({ deviceName: 'No type', serialNumber: 'SN-1' });
+    await render();
+    expect(labelText('Device Type')).toBe('Device Type *');
+
+    component.saveDevices();
+    await render();
+
+    http.expectNone(DEVICES_URL);
+    expect(fieldErrors()).toEqual(['Device Type is required.']);
+    expect(notify.toast()?.message).toBe('Device #1: Device Type required.');
+  });
+
+  it('marks Serial Number as required except for Bag and SIM Line', async () => {
+    const cases: [string, boolean][] = [['', true], ['Mobile', true], ['Laptop', true], ['Bag', false], ['sim line', false]];
+    for (const [type, required] of cases) {
+      fill({ deviceType: type });
+      await render();
+      expect(labelText('Serial Number')).toBe(required ? 'Serial Number *' : 'Serial Number');
+    }
+  });
+
+  it('blocks Save for a Mobile without serial, but saves a SIM Line without one', async () => {
+    fill({ deviceName: 'Phone', deviceType: 'Mobile', serialNumber: '   ' });
+    component.saveDevices();
+    await render();
+
+    http.expectNone(DEVICES_URL);
+    expect(fieldErrors()).toEqual(['Serial Number is required for Mobile.']);
+
+    fill({ deviceType: 'SIM Line' });
+    component.saveDevices();
+    http.expectOne(DEVICES_URL).flush({ deviceCode: 'DEV-0001' });
+  });
+
+  it('does not accept N/A for a Laptop, but does for other types', async () => {
+    fill({ deviceName: 'Lap', deviceType: 'Laptop', serialNumber: 'SN-2', ram: 'N/A', storage1: '512 GB', cpu: 'n/a' });
+    component.saveDevices();
+    await render();
+
+    http.expectNone(DEVICES_URL);
+    expect(fieldErrors()).toEqual(['CPU is required for Laptop (N/A is not accepted).', 'RAM is required for Laptop (N/A is not accepted).']);
+    expect(notify.toast()?.message).toBe('Device #1 (Laptop): RAM, CPU required.');
+
+    fill({ deviceType: 'Tablet' });
+    component.saveDevices();
+    const req = http.expectOne(DEVICES_URL);
+    expect((req.request.body as FormData).get('Ram')).toBe('N/A');
+    req.flush({ deviceCode: 'DEV-0002' });
+  });
+
+  it('shows Number of Screens next to Screen Size and sends the size with a "." decimal', async () => {
+    await render();
+    expect(labelText('Number of Screens')).toBe('Number of Screens');
+    expect(card().querySelector('input[placeholder="e.g. 15.6"]')).not.toBeNull();
+
+    fill({ deviceName: 'Bag', deviceType: 'Bag', screenSizeInches: 15.6 });
+    component.saveDevices();
+
+    const req = http.expectOne(DEVICES_URL);
+    expect((req.request.body as FormData).get('ScreenSizeInches')).toBe('15.6');
+    req.flush({ deviceCode: 'DEV-0003' });
+  });
+
+  it('rejects a screen size outside 7-100 or with two decimals', async () => {
+    fill({ deviceName: 'Bag', deviceType: 'Bag', screenSizeInches: 6.5 });
+    await render();
+    expect(fieldErrors()).toEqual(['Screen size must be between 7 and 100 inches.']);
+
+    component.saveDevices();
+    http.expectNone(DEVICES_URL);
+    expect(notify.toast()?.message).toBe('Device #1: Screen size must be between 7 and 100 inches.');
+
+    fill({ screenSizeInches: 15.65 });
+    await render();
+    expect(fieldErrors()).toEqual(['Use at most one decimal, e.g. 15.6.']);
+  });
+
+  it('reads the screen size from a system-info import', async () => {
+    const json = JSON.stringify({
+      hostName: 'HQ-PC-03', serviceTag: 'abc123', cpu: 'i7', totalPhysicalMemory: '16 GB',
+      hardDriveSpace: [{ sizeGB: 512 }], screenSizeInches: '14 in'
+    });
+    const file = new File([json], 'info.json', { type: 'application/json' });
+    const input = document.createElement('input');
+    Object.defineProperty(input, 'files', { value: [file] });
+
+    component.onDeviceScanFile({ target: input } as unknown as Event, 0);
+    await vi.waitFor(() => http.expectOne(r => r.url === CHECK_URL).flush({ exists: false, deviceCode: null, deviceName: null }));
+
+    expect(component.devicesToAdd[0].screenSizeInches).toBe(14);
+    expect(notify.toast()?.message).toBe('System info loaded successfully');
   });
 });

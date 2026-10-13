@@ -132,13 +132,13 @@ describe('EditDevice required hardware and delete permission', () => {
   });
 
   it('blocks Save for an existing Laptop without CPU and highlights the field', async () => {
-    await setup('Admin', { type: 'Laptop', ram: '8 GB', storage1: '256 GB', cpu: '' });
+    await setup('Admin', { type: 'Laptop', serialNumber: 'OLD-1', ram: '8 GB', storage1: '256 GB', cpu: '' });
 
     el.querySelector<HTMLButtonElement>('button.primary-btn')!.click();
     await fixture.whenStable();
 
     http.expectNone(DEVICE_URL);
-    expect(fieldErrors()).toEqual(['CPU is required for Laptop.']);
+    expect(fieldErrors()).toEqual(['CPU is required for Laptop (N/A is not accepted).']);
     expect(el.querySelector('input[name="cpu"]')!.classList).toContain('invalid');
     expect(notify.toast()?.message).toBe('CPU is required for Laptop.');
   });
@@ -160,5 +160,71 @@ describe('EditDevice required hardware and delete permission', () => {
   it('shows Delete Device for Admin', async () => {
     await setup('Admin', { type: 'Bag' });
     expect(deleteButton()).toBeDefined();
+  });
+});
+
+describe('EditDevice required type, serial and screen size', () => {
+  let fixture: ComponentFixture<EditDevice>;
+  let http: HttpTestingController;
+  let notify: NotificationService;
+  let el: HTMLElement;
+
+  const fieldErrors = () => Array.from(el.querySelectorAll('.field-error')).map(e => e.textContent!.trim());
+  const save = () => el.querySelector<HTMLButtonElement>('button.primary-btn')!.click();
+
+  async function setup(device: Record<string, unknown>) {
+    await TestBed.configureTestingModule({
+      imports: [EditDevice],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ code: 'DEV-0003' }) } } }
+      ]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(EditDevice);
+    el = fixture.nativeElement;
+    http = TestBed.inject(HttpTestingController);
+    notify = TestBed.inject(NotificationService);
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    fixture.detectChanges();
+    http.expectOne(DEVICE_URL).flush({ id: 7, name: 'Old', code: 'DEV-0003', status: 'Available', assignedUser: '—', ...device });
+    await fixture.whenStable();
+  }
+
+  afterEach(() => http.verify());
+
+  it('requires a serial when editing an old Mobile that has none', async () => {
+    await setup({ type: 'Mobile', serialNumber: null });
+
+    save();
+    await fixture.whenStable();
+
+    http.expectNone(DEVICE_URL);
+    expect(fieldErrors()).toEqual(['Serial Number is required for Mobile.']);
+    expect(notify.toast()?.message).toBe('Serial Number is required for Mobile.');
+  });
+
+  it('requires a Device Type when an old device has none', async () => {
+    await setup({ type: '', serialNumber: 'X-1' });
+
+    save();
+    await fixture.whenStable();
+
+    http.expectNone(DEVICE_URL);
+    expect(fieldErrors()).toEqual(['Device Type is required.']);
+  });
+
+  it('loads the screen size and sends it back', async () => {
+    await setup({ type: 'Bag', screenSizeInches: 15.6 });
+
+    expect(el.querySelector<HTMLInputElement>('input[name="screenSizeInches"]')!.value).toBe('15.6');
+
+    save();
+    const req = http.expectOne(DEVICE_URL);
+    expect((req.request.body as FormData).get('ScreenSizeInches')).toBe('15.6');
+    req.flush({ message: 'ok' });
   });
 });
