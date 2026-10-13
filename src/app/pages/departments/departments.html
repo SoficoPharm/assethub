@@ -42,6 +42,7 @@
                 ✎
               </button>
 
+              @if (auth.canDelete()) {
               <button
                 type="button"
                 class="icon-btn delete"
@@ -54,6 +55,7 @@
                   🗑
                 }
               </button>
+              }
             </div>
             }
           </div>

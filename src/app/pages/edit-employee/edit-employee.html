@@ -45,14 +45,20 @@
           </div>
 
           <div class="form-group">
-            <label>Email Address <span>*</span></label>
+            <label>Email Address</label>
             <input
               type="email"
               [(ngModel)]="email"
+              (ngModelChange)="emailError = ''"
+              (blur)="checkEmail()"
+              [class.invalid]="emailError"
               name="email"
               [disabled]="saving || deleting"
-              placeholder="jane.doe@assethub.local"
+              placeholder="jane.doe@assethub.local (optional)"
             />
+            @if (emailError) {
+              <div class="field-error" role="alert">{{ emailError }}</div>
+            }
           </div>
 
           <div class="form-group">
@@ -196,6 +202,7 @@
         </div>
 
         <div class="actions split-actions">
+          @if (auth.canDelete()) {
           <button
             class="danger-link"
             type="button"
@@ -208,6 +215,7 @@
               Delete Employee
             }
           </button>
+          }
 
           <div class="right-actions">
             <button

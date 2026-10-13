@@ -15,7 +15,7 @@
 </div>
 
 @for (device of devicesToAdd; track $index; let i = $index) {
-  <div class="form-card device-card" [class.has-error]="device.saveError">
+  <div class="form-card device-card" [class.has-error]="device.saveError || (device.showHardwareErrors && missingHardware(device).length)">
   @if (device.saveError) {
     <div class="save-error" role="alert">Not saved: {{ device.saveError }}</div>
   }
@@ -250,14 +250,18 @@
 
       <div class="grid two-cols">
         <div class="form-group">
-          <label>CPU</label>
+          <label>CPU @if (requiresHardware(device)) { <span>*</span> }</label>
           <input
             type="text"
             [name]="'cpu' + i"
             [(ngModel)]="device.cpu"
+            [class.invalid]="isMissing(device, 'CPU')"
             [disabled]="loading"
             placeholder="e.g. Intel Core i7"
           />
+          @if (isMissing(device, 'CPU')) {
+            <div class="field-error" role="alert">CPU is required for {{ device.deviceType }}.</div>
+          }
         </div>
 
         <div class="form-group">
@@ -274,12 +278,13 @@
 
       <div class="grid two-cols">
         <div class="form-group">
-          <label>RAM</label>
+          <label>RAM @if (requiresHardware(device)) { <span>*</span> }</label>
 
           <div class="select-add-row">
             <select
               [name]="'ram' + i"
               [(ngModel)]="device.ram"
+              [class.invalid]="isMissing(device, 'RAM')"
               [disabled]="loading"
             >
               <option value="">Select RAM</option>
@@ -297,6 +302,10 @@
               + Add
             </button>
           </div>
+
+          @if (isMissing(device, 'RAM')) {
+            <div class="field-error" role="alert">RAM is required for {{ device.deviceType }}.</div>
+          }
 
           @if (showAddRam) {
             <div class="inline-add-box">
@@ -330,14 +339,18 @@
 
       <div class="grid two-cols">
         <div class="form-group">
-          <label>Storage 1</label>
+          <label>Storage 1 @if (requiresHardware(device)) { <span>*</span> }</label>
           <input
             type="text"
             [name]="'storage1' + i"
             [(ngModel)]="device.storage1"
+            [class.invalid]="isMissing(device, 'Storage')"
             [disabled]="loading"
             placeholder="e.g. 256 GB SSD"
           />
+          @if (isMissing(device, 'Storage')) {
+            <div class="field-error" role="alert">Storage is required for {{ device.deviceType }}.</div>
+          }
         </div>
 
         <div class="form-group">

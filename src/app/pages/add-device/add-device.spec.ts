@@ -149,7 +149,10 @@ describe('AddDevice serial numbers', () => {
   });
 
   it('checks the serial right after a system-info import', async () => {
-    const json = JSON.stringify({ hostName: 'HQ-PC-01', serviceTag: 'cl7wnl3', systemManufacturer: 'Dell' });
+    const json = JSON.stringify({
+      hostName: 'HQ-PC-01', serviceTag: 'cl7wnl3', systemManufacturer: 'Dell',
+      cpu: 'Intel Core i7', totalPhysicalMemory: '16 GB', hardDriveSpace: [{ sizeGB: 512 }]
+    });
     const file = new File([json], 'info.json', { type: 'application/json' });
     const input = document.createElement('input');
     Object.defineProperty(input, 'files', { value: [file] });
@@ -160,5 +163,122 @@ describe('AddDevice serial numbers', () => {
 
     expect(fieldErrors(cards()[0])).toEqual(['Already used by DEV-0002 - HQ-DEV-SAP-GJAM']);
     expect(saveButton().disabled).toBe(true);
+  });
+});
+
+describe('AddDevice required hardware (Laptop / Desktop)', () => {
+  let fixture: ComponentFixture<AddDevice>;
+  let component: AddDevice;
+  let http: HttpTestingController;
+  let notify: NotificationService;
+  let el: HTMLElement;
+
+  const cards = () => Array.from(el.querySelectorAll<HTMLElement>('.device-card'));
+  const fieldErrors = (card: HTMLElement) => Array.from(card.querySelectorAll('.field-error')).map(e => e.textContent!.trim());
+  const requiredLabels = (card: HTMLElement) =>
+    Array.from(card.querySelectorAll('label'))
+      .filter(l => l.querySelector('span')?.textContent === '*')
+      .map(l => l.textContent!.replace('*', '').trim());
+  // [name] on an ngModel input feeds NgModel, not the DOM, so fields are identified by placeholder.
+  const invalidPlaceholders = (card: HTMLElement) =>
+    Array.from(card.querySelectorAll('.invalid')).map(e => e.getAttribute('placeholder'));
+
+  function fill(index: number, values: Partial<AddDevice['devicesToAdd'][number]>) {
+    Object.assign(component.devicesToAdd[index], values);
+  }
+
+  async function render() {
+    fixture.changeDetectorRef.detectChanges();
+    await fixture.whenStable();
+  }
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [AddDevice],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(AddDevice);
+    component = fixture.componentInstance;
+    el = fixture.nativeElement;
+    http = TestBed.inject(HttpTestingController);
+    notify = TestBed.inject(NotificationService);
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    await fixture.whenStable();
+  });
+
+  afterEach(() => http.verify());
+
+  it('marks RAM, Storage 1 and CPU as required only for Laptop and Desktop', async () => {
+    fill(0, { deviceType: 'Bag' });
+    await render();
+    expect(requiredLabels(cards()[0])).not.toContain('CPU');
+
+    fill(0, { deviceType: 'Laptop' });
+    await render();
+    expect(requiredLabels(cards()[0])).toEqual(expect.arrayContaining(['CPU', 'RAM', 'Storage 1']));
+
+    fill(0, { deviceType: 'Desktop' });
+    await render();
+    expect(requiredLabels(cards()[0])).toEqual(expect.arrayContaining(['CPU', 'RAM', 'Storage 1']));
+  });
+
+  it('blocks Save for a Laptop without CPU and highlights the field', async () => {
+    fill(0, { deviceName: 'HQ laptop', deviceType: 'Laptop', ram: '16 GB', storage1: '512 GB', cpu: '  ' });
+
+    component.saveDevices();
+    await render();
+
+    http.expectNone(`${environment.apiUrl}/Devices`);
+    expect(fieldErrors(cards()[0])).toEqual(['CPU is required for Laptop.']);
+    expect(invalidPlaceholders(cards()[0])).toEqual(['e.g. Intel Core i7']);
+    expect(cards()[0].classList).toContain('has-error');
+    expect(notify.toast()?.message).toBe('Device #1 (Laptop): CPU required.');
+  });
+
+  it('checks every device in a multi-device submit and sends nothing until all are complete', async () => {
+    component.addAnotherDevice();
+    component.addAnotherDevice();
+    fill(0, { deviceName: 'Bag', deviceType: 'Bag' });
+    fill(1, { deviceName: 'Desk', deviceType: 'desktop', cpu: 'i5' });
+    fill(2, { deviceName: 'Lap', deviceType: 'Laptop', ram: '8 GB', storage1: '256 GB', cpu: 'i7' });
+
+    component.saveDevices();
+    await render();
+
+    http.expectNone(`${environment.apiUrl}/Devices`);
+    expect(fieldErrors(cards()[0])).toEqual([]);
+    expect(fieldErrors(cards()[1])).toEqual(['RAM is required for desktop.', 'Storage is required for desktop.']);
+    expect(fieldErrors(cards()[2])).toEqual([]);
+    expect(notify.toast()?.message).toBe('Device #2 (desktop): RAM, Storage required.');
+
+    // Storage 2 alone also counts, because it is what is sent as Storage.
+    fill(1, { ram: '8 GB', storage2: '1 TB' });
+    component.saveDevices();
+    for (let i = 0; i < 3; i++) http.expectOne(`${environment.apiUrl}/Devices`).flush({ deviceCode: `DEV-000${i}` });
+  });
+
+  it('saves a Bag without CPU, RAM or Storage', async () => {
+    fill(0, { deviceName: 'Laptop bag', deviceType: 'Bag' });
+
+    component.saveDevices();
+
+    const req = http.expectOne(`${environment.apiUrl}/Devices`);
+    expect((req.request.body as FormData).get('Cpu')).toBe('');
+    req.flush({ deviceCode: 'DEV-0010' });
+  });
+
+  it('highlights required fields the system-info import did not fill', async () => {
+    const json = JSON.stringify({ hostName: 'HQ-PC-02', totalPhysicalMemory: '16 GB', hardDriveSpace: [{ sizeGB: 256 }] });
+    const file = new File([json], 'info.json', { type: 'application/json' });
+    const input = document.createElement('input');
+    Object.defineProperty(input, 'files', { value: [file] });
+
+    component.onDeviceScanFile({ target: input } as unknown as Event, 0);
+    await vi.waitFor(() => expect(component.devicesToAdd[0].deviceType).toBe('Laptop'));
+    await render();
+
+    expect(fieldErrors(cards()[0])).toEqual(['CPU is required for Laptop.']);
+    expect(notify.toast()?.message).toBe('System info loaded, but CPU is still required for Laptop.');
   });
 });

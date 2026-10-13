@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 export interface EmployeeRow {
   id: number;
   name: string;
-  email: string;
+  email: string | null;
   employeeId: string;
   department: string;
   title: string;
@@ -21,6 +21,7 @@ export interface EmployeeRow {
 
 export interface EmployeeRequest {
   fullName: string;
+  /** Optional. An empty string is stored as no email. */
   email: string;
   employeeId: string;
   department: string;
@@ -29,6 +30,14 @@ export interface EmployeeRequest {
   imageUrl?: string;
   imageFile?: File | null;
   userDomain?: string;
+}
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Email is optional: empty is fine, anything else must look like an email address. */
+export function emailFormatError(email: string): string {
+  const value = email.trim();
+  return !value || EMAIL_PATTERN.test(value) ? '' : 'Enter a valid email address, or leave it empty.';
 }
 
 @Injectable({ providedIn: 'root' })

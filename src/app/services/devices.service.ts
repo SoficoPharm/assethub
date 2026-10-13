@@ -26,6 +26,32 @@ export function serialInUseMessage(result: SerialCheckResult): string {
   return `Already used by ${result.deviceCode} - ${result.deviceName}`;
 }
 
+export type HardwareField = 'RAM' | 'Storage' | 'CPU';
+
+/** Device types (case-insensitive) that need RAM, Storage and CPU. Mirrors the API rule. */
+const TYPES_REQUIRING_HARDWARE = ['laptop', 'desktop'];
+
+export function requiresHardware(deviceType: string | null | undefined): boolean {
+  return TYPES_REQUIRING_HARDWARE.includes((deviceType ?? '').trim().toLowerCase());
+}
+
+/**
+ * The hardware fields still empty for a Laptop or Desktop; always [] for other types.
+ * `storage` is the value sent as Storage (Storage 1, else Storage 2).
+ */
+export function missingHardware(
+  deviceType: string | null | undefined,
+  values: { ram: string | null | undefined; storage: string | null | undefined; cpu: string | null | undefined }
+): HardwareField[] {
+  if (!requiresHardware(deviceType)) return [];
+
+  const missing: HardwareField[] = [];
+  if (!values.ram?.trim()) missing.push('RAM');
+  if (!values.storage?.trim()) missing.push('Storage');
+  if (!values.cpu?.trim()) missing.push('CPU');
+  return missing;
+}
+
 export interface DeviceRow {
   id: number;
   name: string;

@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { NotificationService } from '../../core/notification.service';
+import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -8,7 +9,10 @@ import {
   DeviceStatus,
   DevicesService,
   EDITABLE_DEVICE_STATUSES,
+  HardwareField,
+  missingHardware,
   normalizeSerial,
+  requiresHardware,
   serialInUseMessage
 } from '../../services/devices.service';
 
@@ -21,6 +25,7 @@ import {
 })
 export class EditDevice implements OnInit {
   private readonly notify = inject(NotificationService);
+  readonly auth = inject(AuthService);
 
   deviceCode = '';
 
@@ -58,6 +63,9 @@ export class EditDevice implements OnInit {
   serialError = '';
   checkingSerial = false;
 
+  /** Set after a save attempt: missing required hardware is highlighted. */
+  showHardwareErrors = false;
+
   deviceTypes = ['Laptop', 'Mobile', 'Tablet', 'Desktop', 'Bag', 'SIM Line'];
   brands = ['Apple', 'Samsung', 'Lenovo', 'Dell', 'HP', 'Vodafone', 'Orange', 'Etisalat'];
   ramOptions = ['N/A', '4 GB', '8 GB', '16 GB', '32 GB'];
@@ -85,6 +93,23 @@ export class EditDevice implements OnInit {
     return this.originalStatus === 'Assigned'
       ? ['Assigned', ...EDITABLE_DEVICE_STATUSES]
       : EDITABLE_DEVICE_STATUSES;
+  }
+
+  /** Laptop and Desktop need RAM, Storage and CPU. */
+  get requiresHardware(): boolean {
+    return requiresHardware(this.deviceType);
+  }
+
+  get missingHardware(): HardwareField[] {
+    return missingHardware(this.deviceType, {
+      ram: this.ram,
+      storage: this.storage1 || this.storage2,
+      cpu: this.cpu
+    });
+  }
+
+  isMissing(field: HardwareField): boolean {
+    return this.showHardwareErrors && this.missingHardware.includes(field);
   }
 
   onSerialInput(): void {
@@ -215,6 +240,14 @@ export class EditDevice implements OnInit {
   saveChanges(): void {
     if (!this.deviceName.trim()) {
       this.notify.error('Please enter device name.');
+      return;
+    }
+
+    this.showHardwareErrors = true;
+    const missing = this.missingHardware;
+    if (missing.length) {
+      this.notify.error(`${missing.join(', ')} ${missing.length === 1 ? 'is' : 'are'} required for ${this.deviceType}.`);
+      this.cdr.detectChanges();
       return;
     }
 
